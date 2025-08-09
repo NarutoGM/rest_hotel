@@ -4,23 +4,37 @@ import { Button } from "../../components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../components/ui/tooltip";
 import { Users, Pencil, Trash2 } from "lucide-react";
 
+
 interface Table {
-  id: string;
-  name: string;
-  capacityMin: number;
-  capacityMax: number;
-  area: string;
+  id: number;
+  tableNumber: string;
+  tableCapacity: number;
+  tableLocation: string;
+  tableStatus: string;
 }
+
+
 
 interface RestaurantReservation {
   id: string;
-  tableId: string;
-  customerName: string;
-  num: number;
+  customerId: string;
+  tableId: number;
+  guestName: string;
+  guestEmail: string;
   phone: string;
+  reservationDate: string;
   startTime: Date;
   endTime: Date;
+  numberOfPeople: number;
   status: "confirmed" | "pending" | "cancelled";
+  statusColor: string;
+  statusDescription: string;
+  tableNumber: string;
+  tableCapacity: number;
+  tableLocation: string;
+  tableStatus: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ReservationTooltipProps {
@@ -35,7 +49,6 @@ interface ReservationTooltipProps {
 
 export default function ReservationTooltip({
   reservation,
-  tables,
   handleEditReservation,
   handleDeleteReservation,
   loading,
@@ -44,6 +57,7 @@ export default function ReservationTooltip({
 }: ReservationTooltipProps) {
   const isStriped = reservation.status === "pending";
 
+  console.log("ReservationTooltip rendered", reservation);
   return (
     <TooltipProvider>
       <Tooltip>
@@ -71,28 +85,33 @@ export default function ReservationTooltip({
             }}
           >
             <div className="font-semibold truncate w-full text-center">
-              {reservation.customerName}
+              {reservation.guestName}
             </div>
             <div className="flex items-center gap-1 text-xs">
               <Users className="w-3 h-3" />
-              {reservation.num}
+              {reservation.numberOfPeople}
             </div>
           </div>
         </TooltipTrigger>
         <TooltipContent className="bg-gray-900 text-white p-3 rounded-lg shadow-xl">
           <div className="space-y-1">
-            <p className="font-bold text-sm">{reservation.customerName}</p>
-            <p className="text-xs">Mesa: {tables.find((t) => t.id === reservation.tableId)?.name}</p>
-            <p className="text-xs">Personas: {reservation.num}</p>
-            <p className="text-xs">Telefono: {reservation?.phone}</p>
+            <p className="font-bold text-sm">{reservation.guestName}</p>
+            <p className="text-xs">Mesa: {reservation.tableNumber} - {reservation.tableLocation}</p>
+            <p className="text-xs">Email: {reservation.guestEmail}</p>
+            <p className="text-xs">Teléfono: {reservation.phone}</p>
+            <p className="text-xs">Personas: {reservation.numberOfPeople} / {reservation.tableCapacity}</p>
             <p className="text-xs">
               Inicio: {reservation.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
             <p className="text-xs">
               Fin: {reservation.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
-            <p className="text-xs">
-              Estado: {reservation.status === "confirmed" ? "Confirmado" : reservation.status === "pending" ? "Pendiente" : "Cancelado"}
+            <p className="text-xs flex items-center gap-1">
+              <span 
+                className="w-2 h-2 rounded-full" 
+                style={{ backgroundColor: reservation.statusColor }}
+              ></span>
+              {reservation.statusDescription}
             </p>
             <div className="flex gap-2 mt-2 pt-2 border-t border-gray-700">
               <Button

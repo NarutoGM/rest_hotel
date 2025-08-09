@@ -386,7 +386,7 @@ export default function ReservationModal({
                   </span>
                 )}
               </label>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {checkingAvailability ? (
                   <p className="text-sm text-gray-500 p-2">Verificando disponibilidad...</p>
                 ) : availableRooms.length > 0 ? (

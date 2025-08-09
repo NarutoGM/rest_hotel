@@ -347,7 +347,7 @@ useEffect(() => {
         <div className="flex items-center gap-2">
           <Button
             onClick={handlePreviousWeek}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300"
+            className="bg-gray-200 text-zinc-800 hover:bg-gray-300"
             disabled={loading}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -362,13 +362,13 @@ useEffect(() => {
           />
           <Button
             onClick={handleNextWeek}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300"
+            className="bg-gray-200 text-zinc-800 hover:bg-gray-300"
             disabled={loading}
           >
             Próxima Semana
             <ChevronRight className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-gray-600 ml-4">
+          <span className="text-sm text-zinc-600 ml-4">
             {formatDisplayDate(days[0] || currentStartDate)} - {formatDisplayDate(days[days.length - 1] || currentStartDate)}
           </span>
         </div>
@@ -394,7 +394,7 @@ useEffect(() => {
                 key={index}
                 className="p-2 text-center font-semibold border-r last:border-r-0 bg-gray-100 flex flex-col items-center justify-center"
               >
-                <div className="text-xs text-gray-600">{getDayName(day)}</div>
+                <div className="text-xs text-zinc-500">{getDayName(day)}</div>
                 <div className="text-sm">{formatDisplayDate(day)}</div>
               </div>
             ))}
@@ -407,13 +407,13 @@ useEffect(() => {
             <div key={room.id} className="border-b last:border-b-0 grid grid-cols-[200px_1fr]">
               <div className="p-3 border-r bg-gray-50 flex flex-col justify-center">
                 <div className="font-medium text-sm">{room.room_number}</div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-zinc-600">
                   {room.room_type} • {room.capacity} {room.capacity === 1 ? 'huésped' : 'huéspedes'} • {room.number_of_beds} {room.number_of_beds === 1 ? 'cama' : 'camas'}
                 </div>
                 <div className="text-xs text-green-600 font-medium">
                   ${room.price_per_night}/noche
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-zinc-600">
                   {room.has_wifi && 'WiFi • '}
                   {room.has_air_conditioning && 'A/C • '}
                   {room.has_tv && 'TV • '}

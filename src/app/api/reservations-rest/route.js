@@ -1,103 +1,114 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+const REMOTE_API_URL = 'https://reservations-uty9.onrender.com/api/restaurant-reservations';
 
-const dbFile = path.join(process.cwd(), 'data', 'reservations-rest.json');
-
-async function initializeDb() {
-  try {
-    await fs.access(dbFile);
-  } catch (error) {
-    console.log(`Archivo ${dbFile} no encontrado, creándolo...`);
-    const dataDir = path.join(process.cwd(), 'data');
-    try {
-      await fs.access(dataDir);
-    } catch {
-      await fs.mkdir(dataDir, { recursive: true });
-    }
-    await fs.writeFile(dbFile, JSON.stringify([]));
-  }
-}
-
+// GET handler
 export async function GET() {
   try {
-    console.log('Intentando leer desde:', dbFile);
-    await initializeDb();
-    const data = await fs.readFile(dbFile, 'utf8');
-    const reservations = JSON.parse(data);
-    return Response.json(reservations);
-  } catch (error) {
-    console.error('Error en GET /api/reservations-rest:', error);
-    return new Response(JSON.stringify({ error: 'Error al leer las reservas', details: error.message }), {
-      status: 500,
+    const response = await fetch(REMOTE_API_URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
+
+    if (!response.ok) {
+      throw new Error(`Error en la API remota: ${response.status}`);
+    }
+
+    const apiData = await response.json();
+    
+    // Transformar los datos de la API remota al formato que espera el frontend
+    const transformedReservations = apiData.data.map((reservation) => ({
+      id: reservation.id.toString(),
+      customerId: reservation.customer_id,
+      tableId: reservation.table_id,
+      guestName: reservation.customer.full_name,
+      guestEmail: reservation.customer.email,
+      phone: reservation.customer.phone,
+      reservationDate: reservation.reservation_date,
+      startTime: reservation.start_time,
+      endTime: reservation.end_time,
+      numberOfPeople: reservation.number_of_people,
+      status: reservation.status.name, // 'pending', 'confirmed', 'cancelled'
+      statusColor: reservation.status.color,
+      statusDescription: reservation.status.description,
+      // Información de la mesa
+      tableNumber: reservation.table.table_number,
+      tableCapacity: reservation.table.capacity,
+      tableLocation: reservation.table.location,
+      tableStatus: reservation.table.status,
+      createdAt: reservation.created_at,
+      updatedAt: reservation.updated_at
+    }));
+
+    return Response.json(transformedReservations);
+  } catch (error) {
+    console.error('Error en GET /api/restaurant-reservations:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Error al obtener las reservas del restaurante', 
+        details: error.message 
+      }), 
+      { status: 500 }
+    );
   }
 }
+
+// POST handler
+// POST handler
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { tableId, customerName, num, phone, startTime, endTime, status } = body;
+    const { 
+      tableId, 
+      guestName, 
+      guestEmail, 
+      phone, 
+      reservationDate, 
+      startTime, 
+      endTime, 
+      numberOfPeople,
+      status = 'pending'
+    } = body;
 
-    if (!tableId || !customerName || !startTime || !endTime) {
-      return new Response(JSON.stringify({ error: 'Faltan datos requeridos' }), { status: 400 });
-    }
+    console.log('Datos recibidos en POST /api/restaurant-reservations:', body);
 
-    if (num <= 0) {
-      return new Response(JSON.stringify({ error: 'El número de personas debe ser mayor a 0' }), { status: 400 });
-    }
-
-    if (!['confirmed', 'pending', 'cancelled'].includes(status)) {
-      return new Response(JSON.stringify({ error: 'Estado inválido' }), { status: 400 });
-    }
-
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    if (start >= end) {
-      return new Response(JSON.stringify({ error: 'La hora de inicio debe ser anterior a la hora de fin' }), { status: 400 });
-    }
-
-    await initializeDb();
-    const data = await fs.readFile(dbFile, 'utf8');
-    const reservations = JSON.parse(data);
-
-    const hasConflict = reservations.some((reservation) => {
-      if (reservation.tableId !== tableId || reservation.status === 'cancelled') return false;
-      const existingStart = new Date(reservation.startTime);
-      const existingEnd = new Date(reservation.endTime);
-      return (
-        (start >= existingStart && start < existingEnd) ||
-        (end > existingStart && end <= existingEnd) ||
-        (start <= existingStart && end >= existingEnd)
-      );
-    });
-
-    if (hasConflict) {
-      return new Response(JSON.stringify({ error: 'Ya existe una reserva en ese horario para esta mesa' }), {
-        status: 409,
-      });
-    }
-
-    const newId = reservations.length > 0 ? Math.max(...reservations.map(r => r.id)) + 1 : 1;
-
-    const newReservation = {
-      id: newId,
-      tableId,
-      customerName: customerName.trim(),
-      num,
-      phone,
-      startTime,
-      endTime,
-      status,
+    // Transformar datos
+    const transformedReservation = {
+      customer_full_name: guestName,
+      customer_email: guestEmail,
+      customer_phone: phone,
+      table_id: tableId,
+      reservation_date: reservationDate,
+      start_time: startTime.split('T')[1].slice(0, 5),
+      end_time: endTime.split('T')[1].slice(0, 5),
+      number_of_people: numberOfPeople,
+      reservation_status_id: status === 'pending' ? 2 : 1
     };
 
-    reservations.push(newReservation);
-    await fs.writeFile(dbFile, JSON.stringify(reservations, null, 2));
-
-    return new Response(JSON.stringify(newReservation), { status: 201 });
-  } catch (error) {
-    console.error('Error en POST /api/reservations-rest:', error);
-    return new Response(JSON.stringify({ error: 'Error al agregar la reserva', details: error.message }), {
-      status: 500,
+    // Enviar datos a la API remota
+    const remoteResponse = await fetch(REMOTE_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(transformedReservation)
     });
+
+    if (!remoteResponse.ok) {
+      const errorText = await remoteResponse.text();
+      throw new Error(`Error en API remota: ${remoteResponse.status} - ${errorText}`);
+    }
+
+    const remoteData = await remoteResponse.json();
+
+    return new Response(JSON.stringify(remoteData), { status: 201 });
+  } catch (error) {
+    console.error('Error en POST /api/restaurant-reservations:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Error al crear la reserva del restaurante', 
+        details: error.message 
+      }), 
+      { status: 500 }
+    );
   }
 }

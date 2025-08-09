@@ -3,30 +3,40 @@ import type React from "react";
 import { useState, useEffect, useRef, MouseEvent } from "react";
 import { Button } from "../../components/ui/button";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
 import ReservationModal from "./ReservationModal";
 import ReservationTooltip from "./ReservationTooltip";
 
 interface Table {
-  id: string;
-  name: string;
-  capacityMin: number;
-  capacityMax: number;
-  area: string;
+  id: number;
+  tableNumber: string;
+  tableCapacity: number;
+  tableLocation: string;
+  tableStatus: string;
 }
 
 interface RestaurantReservation {
   id: string;
-  tableId: string;
-  customerName: string;
-  num: number;
+  customerId: string;
+  tableId: number;
+  guestName: string;
+  guestEmail: string;
   phone: string;
+  reservationDate: string;
   startTime: Date;
   endTime: Date;
+  numberOfPeople: number;
   status: "confirmed" | "pending" | "cancelled";
+  statusColor: string;
+  statusDescription: string;
+  tableNumber: string;
+  tableCapacity: number;
+  tableLocation: string;
+  tableStatus: string;
+  
+  createdAt: string;
+  updatedAt: string;
 }
 
-// Props opcionales o vacíos
 interface RestaurantReservationsProps {
   initialDate?: Date;
 }
@@ -35,10 +45,39 @@ const HOURS = Array.from({ length: 13 }, (_, i) => 7 + i); // 7am a 7pm (13 hora
 const MIN_HOUR = 7;
 const HOUR_WIDTH_PX = 130;
 
+// Helper function para mapear status string a ID
+const getStatusId = (status: string): number => {
+  switch (status) {
+    case "pending":
+      return 1;
+    case "confirmed":
+      return 2;
+    case "cancelled":
+      return 3;
+    default:
+      return 1;
+  }
+};
+
+// Helper function to format date in local timezone
+const formatLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 export default function RestaurantReservations({
   initialDate = new Date(),
 }: RestaurantReservationsProps = {}) {
-  // Estado interno para manejar las reservas
+  // Normalize initialDate to local midnight
+  const normalizedInitialDate = new Date(
+    initialDate.getFullYear(),
+    initialDate.getMonth(),
+    initialDate.getDate()
+  );
+
+  // Estado interno
   const [reservations, setReservations] = useState<RestaurantReservation[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [currentTimeLinePosition, setCurrentTimeLinePosition] = useState(0);
@@ -47,34 +86,51 @@ export default function RestaurantReservations({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingReservationId, setEditingReservationId] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState(new Date(initialDate));
+  const [currentDate, setCurrentDate] = useState(normalizedInitialDate);
   const [newReservation, setNewReservation] = useState<{
-    tableId: string;
-    customerName: string;
-    num: number;
+    tableId: number;
+    guestName: string;
+    guestEmail: string;
+    customerId: string;
+    numberOfPeople: number;
     startTime: Date;
     endTime: Date;
     phone: string;
     status: "confirmed" | "pending";
   }>({
-    tableId: "",
-    customerName: "",
-    num: 1,
-    startTime: new Date(currentDate),
-    endTime: new Date(currentDate),
+    tableId: 0,
+    guestName: "",
+    guestEmail: "",
+    customerId: "",
+    numberOfPeople: 1,
+    startTime: new Date(normalizedInitialDate),
+    endTime: new Date(normalizedInitialDate),
     phone: "",
     status: "pending",
   });
   const timelineRef = useRef<HTMLDivElement>(null);
 
+  // Cargar mesas desde la API
   useEffect(() => {
     const fetchTables = async () => {
       setLoading(true);
       try {
         const response = await fetch("/api/tables");
         if (!response.ok) throw new Error("Error al cargar las mesas");
-        const data = await response.json();
-        setTables(data);
+        const result = await response.json();
+        console.log("Datos de mesas:", result);
+
+        const transformedTables = (Array.isArray(result.data) ? result.data : [])
+          .filter((table: any) => table.status === "available")
+          .map((table: any) => ({
+            id: table.id,
+            tableNumber: table.table_number || table.name,
+            tableCapacity: table.capacity || table.capacityMax,
+            tableLocation: table.location || table.area,
+            tableStatus: table.status || "available",
+          }));
+
+        setTables(transformedTables);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
       } finally {
@@ -85,6 +141,38 @@ export default function RestaurantReservations({
     fetchTables();
   }, []);
 
+  // Cargar reservas desde la API
+  useEffect(() => {
+    const fetchReservations = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/reservations-rest");
+        if (!response.ok) throw new Error("Error al cargar las reservas");
+        const data = await response.json();
+        console.log("Datos de reservas:", data);
+        // Transformar las reservas y filtrar por fecha actual
+        const transformedReservations = data
+          .map((res: any) => ({
+            ...res,
+            startTime: new Date(res.startTime),
+            endTime: new Date(res.endTime),
+          }))
+          .filter((res: RestaurantReservation) =>
+            new Date(res.startTime).toDateString() === currentDate.toDateString()
+          );
+
+        setReservations(transformedReservations);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReservations();
+  }, [currentDate]);
+
+  // Actualizar la línea de tiempo
   useEffect(() => {
     const updateTimeLine = () => {
       if (timelineRef.current) {
@@ -109,12 +197,28 @@ export default function RestaurantReservations({
   }, [currentDate]);
 
   const handleEditReservation = (reservation: RestaurantReservation) => {
+    const startTime = new Date(reservation.startTime);
+    const endTime = new Date(reservation.endTime);
     setNewReservation({
       tableId: reservation.tableId,
-      customerName: reservation.customerName,
-      num: reservation.num,
-      startTime: new Date(reservation.startTime),
-      endTime: new Date(reservation.endTime),
+      guestName: reservation.guestName,
+      customerId: reservation.customerId ,
+      guestEmail: reservation.guestEmail,
+      numberOfPeople: reservation.numberOfPeople,
+      startTime: new Date(
+        startTime.getFullYear(),
+        startTime.getMonth(),
+        startTime.getDate(),
+        startTime.getHours(),
+        startTime.getMinutes()
+      ),
+      endTime: new Date(
+        endTime.getFullYear(),
+        endTime.getMonth(),
+        endTime.getDate(),
+        endTime.getHours(),
+        endTime.getMinutes()
+      ),
       phone: reservation.phone,
       status: reservation.status as "confirmed" | "pending",
     });
@@ -127,7 +231,7 @@ export default function RestaurantReservations({
     if (confirm("¿Estás seguro de que quieres eliminar esta reserva?")) {
       setLoading(true);
       try {
-        const response = await fetch(`/api/reservations-rest/${id}`, {
+        const response = await fetch(`/api/restaurant-reservations/${id}`, {
           method: "DELETE",
         });
 
@@ -149,15 +253,29 @@ export default function RestaurantReservations({
     const hourIndex = Math.floor(x / cellWidth);
     const clickedHour = MIN_HOUR + hourIndex;
 
-    const startTime = new Date(currentDate);
-    startTime.setHours(clickedHour, 0, 0, 0);
-    const endTime = new Date(startTime);
-    endTime.setHours(clickedHour + 1, 0, 0, 0);
+    const startTime = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      clickedHour,
+      0,
+      0
+    );
+    const endTime = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      clickedHour + 1,
+      0,
+      0
+    );
 
     setNewReservation({
       tableId: table.id,
-      customerName: "",
-      num: table.capacityMin,
+      guestName: "",
+      customerId: "",
+      guestEmail: "",
+      numberOfPeople: 1,
       startTime,
       endTime,
       phone: "",
@@ -169,15 +287,29 @@ export default function RestaurantReservations({
   };
 
   const handleManualAddReservation = () => {
-    const startTime = new Date(currentDate);
-    startTime.setHours(7, 0, 0, 0);
-    const endTime = new Date(startTime);
-    endTime.setHours(8, 0, 0, 0);
+    const startTime = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      7,
+      0,
+      0
+    );
+    const endTime = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      8,
+      0,
+      0
+    );
 
     setNewReservation({
-      tableId: tables.length > 0 ? tables[0].id : "",
-      customerName: "",
-      num: 1,
+      tableId: tables.length > 0 ? tables[0].id : 0,
+      guestName: "",
+      guestEmail: "",
+      customerId: "",
+      numberOfPeople: 1,
       startTime,
       endTime,
       phone: "",
@@ -189,36 +321,46 @@ export default function RestaurantReservations({
   };
 
   const handleSaveReservation = async () => {
-    if (newReservation.customerName.trim() === "") {
-      alert("El nombre del cliente no puede estar vacío.");
+    if (newReservation.guestName.trim() === "") {
+      alert("El nombre del huésped no puede estar vacío.");
       return;
     }
-    if (newReservation.num <= 0) {
+    if (newReservation.guestEmail.trim() === "") {
+      alert("El email del huésped no puede estar vacío.");
+      return;
+    }
+    if (newReservation.numberOfPeople <= 0) {
       alert("Número de personas inválido.");
       return;
     }
 
     const selectedTable = tables.find((t) => t.id === newReservation.tableId);
-    if (selectedTable && newReservation.num > selectedTable.capacityMax) {
-      alert(`El número de personas excede la capacidad máxima de la mesa (${selectedTable.capacityMax}).`);
+    if (selectedTable && newReservation.numberOfPeople > selectedTable.tableCapacity) {
+      alert(
+        `El número de personas excede la capacidad máxima de la mesa (${selectedTable.tableCapacity}).`
+      );
       return;
     }
 
     setLoading(true);
     try {
+      const requestBody = {
+        tableId: newReservation.tableId,
+        guestName: newReservation.guestName,
+        guestEmail: newReservation.guestEmail,
+        numberOfPeople: newReservation.numberOfPeople,
+        phone: newReservation.phone,
+        reservationDate: formatLocalDate(currentDate),
+        startTime: newReservation.startTime.toISOString(),
+        endTime: newReservation.endTime.toISOString(),
+        status: newReservation.status,
+      };
+
       if (isEditing && editingReservationId) {
-        const response = await fetch(`/api/reservations-rest/${editingReservationId}`, {
+        const response = await fetch(`/api/restaurant-reservations/${editingReservationId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tableId: newReservation.tableId,
-            customerName: newReservation.customerName,
-            num: newReservation.num,
-            phone: newReservation.phone,
-            startTime: newReservation.startTime.toISOString(),
-            endTime: newReservation.endTime.toISOString(),
-            status: newReservation.status,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -242,15 +384,7 @@ export default function RestaurantReservations({
         const response = await fetch("/api/reservations-rest", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tableId: newReservation.tableId,
-            customerName: newReservation.customerName,
-            num: newReservation.num,
-            phone: newReservation.phone,
-            startTime: newReservation.startTime.toISOString(),
-            endTime: newReservation.endTime.toISOString(),
-            status: newReservation.status,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -271,6 +405,22 @@ export default function RestaurantReservations({
 
       setIsModalOpen(false);
       resetModalState();
+
+      // Recargar reservas
+      const response = await fetch("/api/reservations-rest");
+      if (response.ok) {
+        const data = await response.json();
+        const transformedReservations = data
+          .map((res: any) => ({
+            ...res,
+            startTime: new Date(res.startTime),
+            endTime: new Date(res.endTime),
+          }))
+          .filter((res: RestaurantReservation) =>
+            new Date(res.startTime).toDateString() === currentDate.toDateString()
+          );
+        setReservations(transformedReservations);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -279,12 +429,30 @@ export default function RestaurantReservations({
   };
 
   const resetModalState = () => {
+    const startTime = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      7,
+      0,
+      0
+    );
+    const endTime = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      8,
+      0,
+      0
+    );
     setNewReservation({
-      tableId: "",
-      customerName: "",
-      num: 1,
-      startTime: new Date(currentDate),
-      endTime: new Date(currentDate),
+      tableId: 0,
+      guestName: "",
+      customerId: "",
+      guestEmail: "",
+      numberOfPeople: 1,
+      startTime,
+      endTime,
       phone: "",
       status: "pending",
     });
@@ -303,60 +471,62 @@ export default function RestaurantReservations({
 
   const handleDateChange = (newDate: Date) => {
     if (!isNaN(newDate.getTime())) {
-      setCurrentDate(new Date(newDate));
+      const normalizedDate = new Date(
+        newDate.getFullYear(),
+        newDate.getMonth(),
+        newDate.getDate()
+      );
+      setCurrentDate(normalizedDate);
+      // Update newReservation startTime and endTime to match new date
+      const startTime = new Date(
+        newDate.getFullYear(),
+        newDate.getMonth(),
+        newDate.getDate(),
+        newReservation.startTime.getHours(),
+        newReservation.startTime.getMinutes()
+      );
+      const endTime = new Date(
+        newDate.getFullYear(),
+        newDate.getMonth(),
+        newDate.getDate(),
+        newReservation.endTime.getHours(),
+        newReservation.endTime.getMinutes()
+      );
+      setNewReservation({
+        ...newReservation,
+        startTime,
+        endTime,
+      });
     }
   };
 
   const handlePreviousDay = () => {
-    const prevDay = new Date(currentDate);
-    prevDay.setDate(currentDate.getDate() - 1);
+    const prevDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate() - 1
+    );
     setCurrentDate(prevDay);
   };
 
   const handleNextDay = () => {
-    const nextDay = new Date(currentDate);
-    nextDay.setDate(currentDate.getDate() + 1);
+    const nextDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate() + 1
+    );
     setCurrentDate(nextDay);
   };
 
   const handleDatePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const [year, month, day] = e.target.value.split('-').map(Number);
-    const newDate = new Date(year, month - 1, day); // mes empieza en 0
+    const [year, month, day] = e.target.value.split("-").map(Number);
+    const newDate = new Date(year, month - 1, day);
     handleDateChange(newDate);
   };
 
-  useEffect(() => {
-    const fetchReservations = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch("/api/reservations-rest");
-        if (!response.ok) throw new Error("Error al cargar las reservas");
-        const data = await response.json();
-        setReservations(
-          data.map((res: any) => ({
-            ...res,
-            startTime: new Date(res.startTime),
-            endTime: new Date(res.endTime),
-          }))
-        );
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReservations();
-  }, [currentDate]);
-
   const filteredReservations = reservations.filter(
-    (res) => res.startTime.toDateString() === currentDate.toDateString()
+    (res) => new Date(res.startTime).toDateString() === currentDate.toDateString()
   );
-
-  // Format date for display and input
-  const formatDate = (date: Date) => {
-    return date.toISOString().split("T")[0];
-  };
 
   return (
     <div className="p-4 border rounded-lg bg-white">
@@ -383,7 +553,7 @@ export default function RestaurantReservations({
           </Button>
           <input
             type="date"
-            value={formatDate(currentDate)}
+            value={formatLocalDate(currentDate)}
             onChange={handleDatePickerChange}
             className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             disabled={loading}
@@ -396,7 +566,6 @@ export default function RestaurantReservations({
             Día Siguiente
             <ChevronRight className="w-4 h-4" />
           </Button>
-       
         </div>
         <Button
           onClick={handleManualAddReservation}
@@ -429,20 +598,29 @@ export default function RestaurantReservations({
           {currentTimeLinePosition !== -1 && (
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-30"
-              style={{ left: `calc(150px + ${(currentTimeLinePosition / HOUR_WIDTH_PX) * (100 / HOURS.length)}%)` }}
+              style={{
+                left: `calc(150px + ${(currentTimeLinePosition / HOUR_WIDTH_PX) * (100 / HOURS.length)}%)`,
+              }}
             />
           )}
 
           {tables.map((table) => (
             <div key={table.id} className="border-b last:border-b-0 grid grid-cols-[150px_1fr]">
               <div className="p-3 border-r bg-gray-50 flex flex-col justify-center">
-                <div className="font-medium text-sm">{table.name}</div>
+                <div className="font-medium text-sm">Mesa {table.tableNumber}</div>
                 <div className="text-xs text-gray-600">
-                  {table.capacityMin}-{table.capacityMax} personas
+                  Hasta {table.tableCapacity} personas
                 </div>
-                {table.area && (
-                  <div className="text-xs text-gray-500">{table.area}</div>
+                {table.tableLocation && (
+                  <div className="text-xs text-gray-500">{table.tableLocation}</div>
                 )}
+                <div
+                  className={`text-xs ${
+                    table.tableStatus === "available" ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {table.tableStatus === "available" ? "Disponible" : "No disponible"}
+                </div>
               </div>
 
               <div
@@ -468,8 +646,9 @@ export default function RestaurantReservations({
                     return (
                       <ReservationTooltip
                         key={reservation.id}
-                        reservation={reservation}
                         tables={tables}
+
+                        reservation={reservation}
                         handleEditReservation={handleEditReservation}
                         handleDeleteReservation={handleDeleteReservation}
                         loading={loading}

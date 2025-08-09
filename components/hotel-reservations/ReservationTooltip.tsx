@@ -89,7 +89,7 @@ export default function ReservationTooltip({
       case "cancelled":
         return "rgb(239 68 68)"; // red-500
       default:
-        return "rgb(96 165 250)"; // blue-400
+        return "rgb(96 165 250)"; // yellow-400
     }
   };
 
@@ -145,43 +145,43 @@ export default function ReservationTooltip({
             )}
           </div>
         </TooltipTrigger>
-        <TooltipContent className="bg-gray-900 text-white p-4 rounded-lg shadow-xl max-w-xs">
+        <TooltipContent className="bg-red-900 text-white p-4 rounded-lg shadow-xl max-w-xs">
           <div className="space-y-2">
-            <div className="border-b border-gray-700 pb-2">
-              <p className="font-bold text-base text-blue-300">{reservation.guestName}</p>
-              <p className="text-xs text-gray-300">{reservation.guestEmail}</p>
+            <div className="border-b border-red-700 pb-2">
+              <p className="font-bold text-base text-yellow-300">{reservation.guestName}</p>
+              <p className="text-xs text-red-300">{reservation.guestEmail}</p>
             </div>
             
             <div className="space-y-1.5">
               <p className="text-sm">
-                <span className="text-gray-400">Habitación:</span> {room?.room_number || 'No encontrada'}
+                <span className="text-red-400">Habitación:</span> {room?.room_number || 'No encontrada'}
               </p>
               <p className="text-sm">
-                <span className="text-gray-400">Tipo:</span> {room?.room_type || 'N/A'}
+                <span className="text-red-400">Tipo:</span> {room?.room_type || 'N/A'}
               </p>
               <p className="text-sm">
-                <span className="text-gray-400">Huéspedes:</span> {reservation.guests}
+                <span className="text-red-400">Huéspedes:</span> {reservation.guests}
               </p>
               <p className="text-sm">
-                <span className="text-gray-400">Teléfono:</span> {reservation.phone || 'No disponible'}
-              </p>
-            </div>
-
-            <div className="border-t border-gray-700 pt-2 space-y-1.5">
-              <p className="text-sm">
-                <span className="text-gray-400">Check-in:</span> {formatDate(reservation.checkIn)} a las 3:00 PM
-              </p>
-              <p className="text-sm">
-                <span className="text-gray-400">Check-out:</span> {formatDate(reservation.checkOut)} a la 1:00 PM
-              </p>
-              <p className="text-sm">
-                <span className="text-gray-400">Días de estadía:</span> {calculateStayDays()} {calculateStayDays() === 1 ? 'día' : 'días'}
+                <span className="text-red-400">Teléfono:</span> {reservation.phone || 'No disponible'}
               </p>
             </div>
 
-            <div className="border-t border-gray-700 pt-2">
+            <div className="border-t border-red-700 pt-2 space-y-1.5">
               <p className="text-sm">
-                <span className="text-gray-400">Estado:</span> 
+                <span className="text-red-400">Check-in:</span> {formatDate(reservation.checkIn)} a las 3:00 PM
+              </p>
+              <p className="text-sm">
+                <span className="text-red-400">Check-out:</span> {formatDate(reservation.checkOut)} a la 1:00 PM
+              </p>
+              <p className="text-sm">
+                <span className="text-red-400">Días de estadía:</span> {calculateStayDays()} {calculateStayDays() === 1 ? 'día' : 'días'}
+              </p>
+            </div>
+
+            <div className="border-t border-red-700 pt-2">
+              <p className="text-sm">
+                <span className="text-red-400">Estado:</span> 
                 <span 
                   className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium"
                   style={{ backgroundColor: getStatusColor(), color: 'white' }}
@@ -190,14 +190,14 @@ export default function ReservationTooltip({
                 </span>
               </p>
               <p className="text-sm mt-1">
-                <span className="text-gray-400">Total:</span> 
+                <span className="text-red-400">Total:</span> 
                 <span className="text-green-400 font-semibold ml-1">
                   ${typeof reservation.totalPrice === 'number' ? reservation.totalPrice.toFixed(2) : reservation.totalPrice}
                 </span>
               </p>
             </div>
 
-            <div className="flex gap-2 mt-3 pt-3 border-t border-gray-700">
+            <div className="flex gap-2 mt-3 pt-3 border-t border-red-700">
               <Button
                 variant="secondary"
                 size="sm"
@@ -205,7 +205,7 @@ export default function ReservationTooltip({
                   e.stopPropagation();
                   handleEditReservation(reservation);
                 }}
-                className="text-xs px-3 py-1.5 h-auto bg-blue-600 hover:bg-blue-700 text-white border-0"
+                className="text-xs px-3 py-1.5 h-auto bg-yellow-600 hover:bg-yellow-700 text-white border-0"
                 disabled={loading}
               >
                 <Pencil className="w-3 h-3 mr-1" /> Editar
