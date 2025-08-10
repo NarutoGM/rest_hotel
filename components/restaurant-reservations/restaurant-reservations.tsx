@@ -274,7 +274,7 @@ export default function RestaurantReservations({
     if (confirm("¿Estás seguro de que quieres eliminar esta reserva?")) {
       setLoading(true);
       try {
-        const response = await fetch(`/api/restaurant-reservations/${id}`, {
+        const response = await fetch(`/api/reservations-rest/${id}`, {
           method: "DELETE",
         });
 
@@ -394,6 +394,7 @@ export default function RestaurantReservations({
         numberOfPeople: newReservation.numberOfPeople,
         phone: newReservation.phone,
         reservationDate: formatLocalDate(currentDate),
+        customerId: newReservation.customerId,
         // Convertir las fechas locales a UTC para la API
         startTime: convertLocalToUTC(newReservation.startTime),
         endTime: convertLocalToUTC(newReservation.endTime),
@@ -410,7 +411,7 @@ export default function RestaurantReservations({
       });
 
       if (isEditing && editingReservationId) {
-        const response = await fetch(`/api/restaurant-reservations/${editingReservationId}`, {
+        const response = await fetch(`/api/reservations-rest/${editingReservationId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(requestBody),

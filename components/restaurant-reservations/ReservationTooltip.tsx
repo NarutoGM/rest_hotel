@@ -57,7 +57,6 @@ export default function ReservationTooltip({
 }: ReservationTooltipProps) {
   const isStriped = reservation.status === "pending";
 
-  console.log("ReservationTooltip rendered", reservation);
   return (
     <TooltipProvider>
       <Tooltip>

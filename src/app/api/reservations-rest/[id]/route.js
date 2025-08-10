@@ -12,17 +12,19 @@ export async function PUT(request, { params }) {
       guestEmail, 
       phone, 
       reservationDate, 
+customerId,
       startTime, 
       endTime, 
       numberOfPeople,
       status
     } = body;
 
-    console.log(`Datos recibidos para editar reserva ${id}:`, body);
 
     const transformedReservation = {
       customer_full_name: guestName,
       customer_email: guestEmail,
+        customer_id: body.customerId, // ← añadir esto
+
       customer_phone: phone,
       table_id: tableId,
       reservation_date: reservationDate,
@@ -57,11 +59,9 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE handler (eliminar)
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
   try {
-    const { id } = params;
-
+    const { id } = await context.params; // 👈 aquí se espera
     console.log(`Eliminando reserva con ID: ${id}`);
 
     const remoteResponse = await fetch(`${REMOTE_API_URL}/${id}`, {
@@ -74,7 +74,10 @@ export async function DELETE(request, { params }) {
       throw new Error(`Error en API remota: ${remoteResponse.status} - ${errorText}`);
     }
 
-    return new Response(JSON.stringify({ message: 'Reserva eliminada correctamente' }), { status: 200 });
+    return new Response(
+      JSON.stringify({ message: 'Reserva eliminada correctamente' }), 
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Error en DELETE /api/restaurant-reservations/[id]:', error);
     return new Response(
