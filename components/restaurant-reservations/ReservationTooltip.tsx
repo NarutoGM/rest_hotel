@@ -4,7 +4,6 @@ import { Button } from "../../components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../components/ui/tooltip";
 import { Users, Pencil, Trash2 } from "lucide-react";
 
-
 interface Table {
   id: number;
   tableNumber: string;
@@ -12,8 +11,6 @@ interface Table {
   tableLocation: string;
   tableStatus: string;
 }
-
-
 
 interface RestaurantReservation {
   id: string;
@@ -57,23 +54,37 @@ export default function ReservationTooltip({
 }: ReservationTooltipProps) {
   const isStriped = reservation.status === "pending";
 
+  // Nuevo sistema de colores según estado
+  const getStatusColor = () => {
+    switch (reservation.status) {
+      case "confirmed":
+        return "rgb(34 197 94)"; // verde-500
+      case "pending":
+        return "rgb(234 179 8)"; // amarillo-500
+      case "cancelled":
+        return "rgb(239 68 68)"; // rojo-500
+      default:
+        return "rgb(96 165 250)"; // azul-400
+    }
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="absolute top-1 rounded-md flex flex-col items-center justify-center text-white text-xs p-2 overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-shadow"
+            className="absolute top-1 rounded-md flex flex-col items-center justify-center text-white text-xs p-2 overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
             style={{
               left: `${leftPercent}%`,
               width: `${widthPercent}%`,
               height: "calc(100% - 8px)",
               zIndex: 20,
-              backgroundColor: isStriped ? "rgb(134 239 172)" : "rgb(96 165 250)",
+              backgroundColor: getStatusColor(),
               backgroundImage: isStriped
                 ? `repeating-linear-gradient(
                     45deg,
-                    rgba(255,255,255,.1),
-                    rgba(255,255,255,.1) 5px,
+                    rgba(255,255,255,0.1),
+                    rgba(255,255,255,0.1) 5px,
                     transparent 5px,
                     transparent 10px
                   )`
@@ -92,27 +103,27 @@ export default function ReservationTooltip({
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent className="bg-gray-900 text-white p-3 rounded-lg shadow-xl">
+        <TooltipContent className="bg-red-900 text-white p-3 rounded-lg shadow-xl">
           <div className="space-y-1">
-            <p className="font-bold text-sm">{reservation.guestName}</p>
-            <p className="text-xs">Mesa: {reservation.tableNumber} - {reservation.tableLocation}</p>
-            <p className="text-xs">Email: {reservation.guestEmail}</p>
-            <p className="text-xs">Teléfono: {reservation.phone}</p>
-            <p className="text-xs">Personas: {reservation.numberOfPeople} / {reservation.tableCapacity}</p>
-            <p className="text-xs">
+            <p className="font-bold text-sm text-yellow-300">{reservation.guestName}</p>
+            <p className="text-xs text-red-400">Mesa: {reservation.tableNumber} - {reservation.tableLocation}</p>
+            <p className="text-xs text-red-300">Email: {reservation.guestEmail}</p>
+            <p className="text-xs text-red-400">Teléfono: {reservation.phone}</p>
+            <p className="text-xs text-red-400">Personas: {reservation.numberOfPeople} / {reservation.tableCapacity}</p>
+            <p className="text-xs text-red-400">
               Inicio: {reservation.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
-            <p className="text-xs">
+            <p className="text-xs text-red-400">
               Fin: {reservation.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
             <p className="text-xs flex items-center gap-1">
-              <span 
-                className="w-2 h-2 rounded-full" 
-                style={{ backgroundColor: reservation.statusColor }}
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: getStatusColor() }}
               ></span>
               {reservation.statusDescription}
             </p>
-            <div className="flex gap-2 mt-2 pt-2 border-t border-gray-700">
+            <div className="flex gap-2 mt-2 pt-2 border-t border-red-700">
               <Button
                 variant="secondary"
                 size="sm"
@@ -120,7 +131,7 @@ export default function ReservationTooltip({
                   e.stopPropagation();
                   handleEditReservation(reservation);
                 }}
-                className="text-xs px-2 py-1 h-auto"
+                className="text-xs px-2 py-1 h-auto bg-yellow-600 hover:bg-yellow-700 text-white"
                 disabled={loading}
               >
                 <Pencil className="w-3 h-3 mr-1" /> Editar
@@ -132,7 +143,7 @@ export default function ReservationTooltip({
                   e.stopPropagation();
                   handleDeleteReservation(reservation.id);
                 }}
-                className="text-xs px-2 py-1 h-auto"
+                className="text-xs px-2 py-1 h-auto bg-red-600 hover:bg-red-700 text-white"
                 disabled={loading}
               >
                 <Trash2 className="w-3 h-3 mr-1" /> Eliminar
