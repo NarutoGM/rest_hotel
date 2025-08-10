@@ -67,6 +67,47 @@ const formatLocalDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+// Helper function to convert UTC date to local date maintaining the time
+const convertUTCToLocal = (utcDateString: string): Date => {
+  // Parse the UTC date
+  const utcDate = new Date(utcDateString);
+  
+  // Get the UTC components
+  const utcYear = utcDate.getUTCFullYear();
+  const utcMonth = utcDate.getUTCMonth();
+  const utcDay = utcDate.getUTCDate();
+  const utcHours = utcDate.getUTCHours();
+  const utcMinutes = utcDate.getUTCMinutes();
+  const utcSeconds = utcDate.getUTCSeconds();
+  const utcMilliseconds = utcDate.getUTCMilliseconds();
+  
+  // Create a new date in local timezone with the same time values
+  return new Date(utcYear, utcMonth, utcDay, utcHours, utcMinutes, utcSeconds, utcMilliseconds);
+};
+
+// Helper function to convert local date to UTC for API calls
+const convertLocalToUTC = (localDate: Date): string => {
+  const year = localDate.getFullYear();
+  const month = localDate.getMonth();
+  const day = localDate.getDate();
+  const hours = localDate.getHours();
+  const minutes = localDate.getMinutes();
+  const seconds = localDate.getSeconds();
+  const milliseconds = localDate.getMilliseconds();
+  
+  // Create UTC date with the same time values
+  const utcDate = new Date();
+  utcDate.setUTCFullYear(year);
+  utcDate.setUTCMonth(month);
+  utcDate.setUTCDate(day);
+  utcDate.setUTCHours(hours);
+  utcDate.setUTCMinutes(minutes);
+  utcDate.setUTCSeconds(seconds);
+  utcDate.setUTCMilliseconds(milliseconds);
+  
+  return utcDate.toISOString();
+};
+
 export default function RestaurantReservations({
   initialDate = new Date(),
 }: RestaurantReservationsProps = {}) {
@@ -149,18 +190,20 @@ export default function RestaurantReservations({
         const response = await fetch("/api/reservations-rest");
         if (!response.ok) throw new Error("Error al cargar las reservas");
         const data = await response.json();
-        console.log("Datos de reservas:", data);
-        // Transformar las reservas y filtrar por fecha actual
+        console.log("Datos de reservas originales:", data);
+        
+        // Transformar las reservas convirtiendo UTC a tiempo local
         const transformedReservations = data
           .map((res: any) => ({
             ...res,
-            startTime: new Date(res.startTime),
-            endTime: new Date(res.endTime),
+            startTime: convertUTCToLocal(res.startTime),
+            endTime: convertUTCToLocal(res.endTime),
           }))
           .filter((res: RestaurantReservation) =>
-            new Date(res.startTime).toDateString() === currentDate.toDateString()
+            res.startTime.toDateString() === currentDate.toDateString()
           );
 
+        console.log("Reservas transformadas:", transformedReservations);
         setReservations(transformedReservations);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
@@ -351,10 +394,20 @@ export default function RestaurantReservations({
         numberOfPeople: newReservation.numberOfPeople,
         phone: newReservation.phone,
         reservationDate: formatLocalDate(currentDate),
-        startTime: newReservation.startTime.toISOString(),
-        endTime: newReservation.endTime.toISOString(),
+        // Convertir las fechas locales a UTC para la API
+        startTime: convertLocalToUTC(newReservation.startTime),
+        endTime: convertLocalToUTC(newReservation.endTime),
         status: newReservation.status,
       };
+
+      console.log("Enviando reserva con fechas UTC:", {
+        startTime: requestBody.startTime,
+        endTime: requestBody.endTime,
+        originalLocal: {
+          startTime: newReservation.startTime,
+          endTime: newReservation.endTime
+        }
+      });
 
       if (isEditing && editingReservationId) {
         const response = await fetch(`/api/restaurant-reservations/${editingReservationId}`, {
@@ -374,8 +427,8 @@ export default function RestaurantReservations({
             res.id === editingReservationId
               ? {
                   ...updatedRes,
-                  startTime: new Date(updatedRes.startTime),
-                  endTime: new Date(updatedRes.endTime),
+                  startTime: convertUTCToLocal(updatedRes.startTime),
+                  endTime: convertUTCToLocal(updatedRes.endTime),
                 }
               : res
           )
@@ -397,8 +450,8 @@ export default function RestaurantReservations({
           ...prev,
           {
             ...newRes,
-            startTime: new Date(newRes.startTime),
-            endTime: new Date(newRes.endTime),
+            startTime: convertUTCToLocal(newRes.startTime),
+            endTime: convertUTCToLocal(newRes.endTime),
           },
         ]);
       }
@@ -413,11 +466,11 @@ export default function RestaurantReservations({
         const transformedReservations = data
           .map((res: any) => ({
             ...res,
-            startTime: new Date(res.startTime),
-            endTime: new Date(res.endTime),
+            startTime: convertUTCToLocal(res.startTime),
+            endTime: convertUTCToLocal(res.endTime),
           }))
           .filter((res: RestaurantReservation) =>
-            new Date(res.startTime).toDateString() === currentDate.toDateString()
+            res.startTime.toDateString() === currentDate.toDateString()
           );
         setReservations(transformedReservations);
       }
@@ -525,7 +578,7 @@ export default function RestaurantReservations({
   };
 
   const filteredReservations = reservations.filter(
-    (res) => new Date(res.startTime).toDateString() === currentDate.toDateString()
+    (res) => res.startTime.toDateString() === currentDate.toDateString()
   );
 
   return (
@@ -647,7 +700,6 @@ export default function RestaurantReservations({
                       <ReservationTooltip
                         key={reservation.id}
                         tables={tables}
-
                         reservation={reservation}
                         handleEditReservation={handleEditReservation}
                         handleDeleteReservation={handleDeleteReservation}

@@ -1,128 +1,88 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+const REMOTE_API_URL = 'https://reservations-uty9.onrender.com/api/restaurant-reservations';
 
-const dbFile = path.join(process.cwd(), 'data', 'reservations-rest.json');
-
-async function initializeDb() {
-  try {
-    await fs.access(dbFile);
-  } catch {
-    const dataDir = path.join(process.cwd(), 'data');
-    try {
-      await fs.access(dataDir);
-    } catch {
-      await fs.mkdir(dataDir, { recursive: true });
-    }
-    await fs.writeFile(dbFile, JSON.stringify([]));
-  }
-}
-
+// PUT handler (editar)
 export async function PUT(request, { params }) {
   try {
-    const idNumber = parseInt(params.id);
-    if (isNaN(idNumber)) {
-      return new Response(JSON.stringify({ error: 'ID inválido' }), { status: 400 });
-    }
-
+    const { id } = params;
     const body = await request.json();
-    const { tableId, customerName, num, phone, startTime, endTime, status } = body;
-    const tableIdNum = parseInt(tableId);
+    console.log('Cuerpo de la solicitud PUT:', body);
+    const { 
+      tableId, 
+      guestName, 
+      guestEmail, 
+      phone, 
+      reservationDate, 
+      startTime, 
+      endTime, 
+      numberOfPeople,
+      status
+    } = body;
 
-    if (isNaN(tableIdNum) || !customerName || !startTime || !endTime) {
-      return new Response(JSON.stringify({ error: 'Faltan datos requeridos' }), { status: 400 });
-    }
+    console.log(`Datos recibidos para editar reserva ${id}:`, body);
 
-    if (num <= 0) {
-      return new Response(JSON.stringify({ error: 'El número de personas debe ser mayor a 0' }), { status: 400 });
-    }
-
-    if (!['confirmed', 'pending', 'cancelled'].includes(status)) {
-      return new Response(JSON.stringify({ error: 'Estado inválido' }), { status: 400 });
-    }
-
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    if (start >= end) {
-      return new Response(JSON.stringify({ error: 'La hora de inicio debe ser anterior a la hora de fin' }), { status: 400 });
-    }
-
-    await initializeDb();
-    const data = await fs.readFile(dbFile, 'utf8');
-    let reservations = JSON.parse(data);
-
-    const reservationIndex = reservations.findIndex((r) => r.id === idNumber);
-    if (reservationIndex === -1) {
-      return new Response(JSON.stringify({ error: 'Reserva no encontrada' }), { status: 404 });
-    }
-
-    const hasConflict = reservations.some((r, index) => {
-      if (
-        index === reservationIndex ||
-        r.tableId !== tableIdNum ||
-        r.status === 'cancelled'
-      ) {
-        return false;
-      }
-
-      const existingStart = new Date(r.startTime);
-      const existingEnd = new Date(r.endTime);
-
-      return (
-        (start >= existingStart && start < existingEnd) ||
-        (end > existingStart && end <= existingEnd) ||
-        (start <= existingStart && end >= existingEnd)
-      );
-    });
-
-    if (hasConflict) {
-      return new Response(JSON.stringify({ error: 'Ya existe una reserva en ese horario para esta mesa' }), { status: 409 });
-    }
-
-    reservations[reservationIndex] = {
-      ...reservations[reservationIndex],
-      tableId: tableIdNum,
-      customerName: customerName.trim(),
-      num,
-      phone,
-      startTime,
-      endTime,
-      status,
+    const transformedReservation = {
+      customer_full_name: guestName,
+      customer_email: guestEmail,
+      customer_phone: phone,
+      table_id: tableId,
+      reservation_date: reservationDate,
+      start_time: startTime.split('T')[1].slice(0, 5),
+      end_time: endTime.split('T')[1].slice(0, 5),
+      number_of_people: numberOfPeople,
+      reservation_status_id: status === 'pending' ? 2 : 1
     };
 
-    await fs.writeFile(dbFile, JSON.stringify(reservations, null, 2));
-    return Response.json(reservations[reservationIndex]);
-  } catch (error) {
-    console.error('Error en PUT /api/reservations-rest:', error);
-    return new Response(JSON.stringify({ error: 'Error al actualizar la reserva', details: error.message }), {
-      status: 500,
+    const remoteResponse = await fetch(`${REMOTE_API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(transformedReservation)
     });
+
+    if (!remoteResponse.ok) {
+      const errorText = await remoteResponse.text();
+      throw new Error(`Error en API remota: ${remoteResponse.status} - ${errorText}`);
+    }
+
+    const remoteData = await remoteResponse.json();
+    return new Response(JSON.stringify(remoteData), { status: 200 });
+  } catch (error) {
+    console.error('Error en PUT /api/restaurant-reservations/[id]:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Error al actualizar la reserva del restaurante', 
+        details: error.message 
+      }), 
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(_, { params }) {
+// DELETE handler (eliminar)
+export async function DELETE(request, { params }) {
   try {
-    const idNumber = parseInt(params.id);
-    if (isNaN(idNumber)) {
-      return new Response(JSON.stringify({ error: 'ID inválido' }), { status: 400 });
-    }
+    const { id } = params;
 
-    await initializeDb();
-    const data = await fs.readFile(dbFile, 'utf8');
-    let reservations = JSON.parse(data);
+    console.log(`Eliminando reserva con ID: ${id}`);
 
-    const exists = reservations.some((r) => r.id === idNumber);
-    if (!exists) {
-      return new Response(JSON.stringify({ error: 'Reserva no encontrada' }), { status: 404 });
-    }
-
-    reservations = reservations.filter((r) => r.id !== idNumber);
-    await fs.writeFile(dbFile, JSON.stringify(reservations, null, 2));
-
-    return Response.json({ message: 'Reserva eliminada correctamente' });
-  } catch (error) {
-    console.error('Error en DELETE /api/reservations-rest:', error);
-    return new Response(JSON.stringify({ error: 'Error al eliminar la reserva', details: error.message }), {
-      status: 500,
+    const remoteResponse = await fetch(`${REMOTE_API_URL}/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
     });
+
+    if (!remoteResponse.ok) {
+      const errorText = await remoteResponse.text();
+      throw new Error(`Error en API remota: ${remoteResponse.status} - ${errorText}`);
+    }
+
+    return new Response(JSON.stringify({ message: 'Reserva eliminada correctamente' }), { status: 200 });
+  } catch (error) {
+    console.error('Error en DELETE /api/restaurant-reservations/[id]:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Error al eliminar la reserva del restaurante', 
+        details: error.message 
+      }), 
+      { status: 500 }
+    );
   }
 }
