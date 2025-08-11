@@ -43,6 +43,27 @@ interface HotelReservationsProps {
   initialStartDate?: Date;
 }
 
+// Función helper para manejar fechas UTC correctamente
+const parseUTCDateOnly = (dateString: string | Date) => {
+  // Si ya es un objeto Date, extraer los componentes
+  if (dateString instanceof Date) {
+    return new Date(dateString.getFullYear(), dateString.getMonth(), dateString.getDate());
+  }
+  
+  // Si la fecha viene en formato ISO con Z, extraemos solo la parte de fecha
+  const dateOnly = dateString.split('T')[0];
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  // Crear fecha local sin conversión de zona horaria
+  return new Date(year, month - 1, day);
+};
+
+// Función para comparar solo fechas (sin hora)
+const isSameDate = (date1: Date, date2: Date) => {
+  return date1.getFullYear() === date2.getFullYear() &&
+         date1.getMonth() === date2.getMonth() &&
+         date1.getDate() === date2.getDate();
+};
+
 // Generar 14 días a partir de la fecha inicial (2 semanas)
 const generateDaysArray = (startDate: Date, numDays: number = 14) => {
   const days = [];
@@ -114,31 +135,33 @@ export default function HotelReservations({
     fetchRooms();
   }, []);
 
-// Definición fuera del useEffect para poder reutilizarla
-const fetchReservations = async () => {
-  setLoading(true);
-  try {
-    const response = await fetch("/api/reservations-hotel");
-    if (!response.ok) throw new Error("Error al cargar las reservas");
-    const data = await response.json();
-    console.log("Reservations data:", data);
-    const formattedData = data.map((res: HotelReservation) => ({
-      ...res,
-      checkIn: new Date(res.checkIn),
-      checkOut: new Date(res.checkOut),
-    }));
-    setReservations(formattedData);
-  } catch (err) {
-    setError(err instanceof Error ? err.message : "Error desconocido");
-  } finally {
-    setLoading(false);
-  }
-};
+  // Definición fuera del useEffect para poder reutilizarla
+  const fetchReservations = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/reservations-hotel");
+      if (!response.ok) throw new Error("Error al cargar las reservas");
+      const data = await response.json();
+      console.log("Reservations data:", data);
+      
+      // CAMBIO AQUÍ: usar parseUTCDateOnly
+      const formattedData = data.map((res: HotelReservation) => ({
+        ...res,
+        checkIn: parseUTCDateOnly(res.checkIn),
+        checkOut: parseUTCDateOnly(res.checkOut),
+      }));
+      
+      setReservations(formattedData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-useEffect(() => {
-  fetchReservations();
-}, [currentStartDate]);
-
+  useEffect(() => {
+    fetchReservations();
+  }, [currentStartDate]);
 
   // Funciones para manejar el modal
   const handleCloseModal = () => {
@@ -191,14 +214,27 @@ useEffect(() => {
       if (!response.ok) throw new Error("Error al guardar la reserva");
 
       const savedReservation = await response.json();
+      
+      // CAMBIO AQUÍ: usar parseUTCDateOnly
       if (isEditing) {
         setReservations(
           reservations.map((res) =>
-            res.id === savedReservation.id ? { ...savedReservation, checkIn: new Date(savedReservation.checkIn), checkOut: new Date(savedReservation.checkOut) } : res
+            res.id === savedReservation.id ? { 
+              ...savedReservation, 
+              checkIn: parseUTCDateOnly(savedReservation.checkIn), 
+              checkOut: parseUTCDateOnly(savedReservation.checkOut) 
+            } : res
           )
         );
       } else {
-        setReservations([...reservations, { ...savedReservation, checkIn: new Date(savedReservation.checkIn), checkOut: new Date(savedReservation.checkOut) }]);
+        setReservations([
+          ...reservations, 
+          { 
+            ...savedReservation, 
+            checkIn: parseUTCDateOnly(savedReservation.checkIn), 
+            checkOut: parseUTCDateOnly(savedReservation.checkOut) 
+          }
+        ]);
       }
 
       handleCloseModal();
@@ -223,8 +259,8 @@ useEffect(() => {
     console.log("Editando reserva:", reservation);
     setNewReservation({
       ...reservation,
-      checkIn: new Date(reservation.checkIn),
-      checkOut: new Date(reservation.checkOut),
+      checkIn: parseUTCDateOnly(reservation.checkIn),
+      checkOut: parseUTCDateOnly(reservation.checkOut),
     });
     setIsEditing(true);
     setIsModalOpen(true);
@@ -446,20 +482,26 @@ useEffect(() => {
                 {filteredReservations
                   .filter((res) => res.roomId === room.id)
                   .map((reservation) => {
-                    // Encontrar los índices de los días de check-in y check-out
+                    // CAMBIO AQUÍ: usar isSameDate para comparar fechas
                     const checkInDay = days.findIndex(day =>
-                      day.toDateString() === reservation.checkIn.toDateString()
+                      isSameDate(day, reservation.checkIn)
                     );
                     const checkOutDay = days.findIndex(day =>
-                      day.toDateString() === reservation.checkOut.toDateString()
+                      isSameDate(day, reservation.checkOut)
                     );
 
                     // Si la reserva está completamente fuera del rango visible, no la mostramos
-                    if (checkInDay === -1 && checkOutDay === -1) return null;
+                    if (checkInDay === -1 && checkOutDay === -1) {
+                      // Verificar si la reserva abarca todo el rango visible
+                      const firstDay = days[0];
+                      const lastDay = days[days.length - 1];
+                      const reservaSpansRange = reservation.checkIn < firstDay && reservation.checkOut > lastDay;
+                      if (!reservaSpansRange) return null;
+                    }
 
                     // Asegurar que los índices estén dentro del rango visible
-                    const startIndex = Math.max(0, checkInDay);
-                    const endIndex = Math.min(days.length - 1, checkOutDay);
+                    const startIndex = Math.max(0, checkInDay >= 0 ? checkInDay : 0);
+                    const endIndex = Math.min(days.length - 1, checkOutDay >= 0 ? checkOutDay : days.length - 1);
 
                     // Ajuste visual: comenzar desde la mitad de la celda si el check-in está en rango
                     const startOffset = checkInDay >= 0 ? 0.5 : 0;

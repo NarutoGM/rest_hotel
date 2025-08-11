@@ -71,7 +71,8 @@ export default function ReservationModal({
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [originalRoomId, setOriginalRoomId] = useState<number>(0);
 
-  const isErrorState = availabilityError === "Error al verificar disponibilidad";
+  // Ya no bloquea el formulario, solo afecta el botón guardar
+  const hasAvailabilityError = availabilityError === "Error al verificar disponibilidad";
 
   // Guardar habitación original en modo edición
   useEffect(() => {
@@ -193,12 +194,13 @@ export default function ReservationModal({
   };
 
   const handleInputChange = (field: string, value: any) => {
-    if (isErrorState) return;
+    // Removido el bloqueo isErrorState - ahora siempre permite editar
     onReservationChange({ ...newReservation, [field]: value });
   };
 
   const handleDateChange = (field: "checkIn" | "checkOut", dateString: string) => {
-    if (isErrorState || !dateString) return;
+    // Removido el bloqueo isErrorState - ahora siempre permite editar
+    if (!dateString) return;
 
     const [year, month, day] = dateString.split("-").map(Number);
     const newDate = new Date(year, month - 1, day);
@@ -209,7 +211,7 @@ export default function ReservationModal({
   };
 
   const handleGuestsChange = (num: number) => {
-    if (isErrorState) return;
+    // Removido el bloqueo isErrorState - ahora siempre permite editar
     handleInputChange("guests", num);
     setShowCustomGuestsInput(num > 5);
   };
@@ -236,6 +238,14 @@ export default function ReservationModal({
   const getRoomStatusClass = (room: Room) => {
     if (room.room_type === "current") return "bg-blue-100 text-blue-800";
     return "bg-green-100 text-green-800";
+  };
+
+  // Función para obtener el mensaje de error más amigable
+  const getAvailabilityMessage = () => {
+    if (availabilityError === "Error al verificar disponibilidad") {
+      return "Intenta seleccionar otro rango de fechas";
+    }
+    return availabilityError;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -268,7 +278,7 @@ export default function ReservationModal({
                     value={formatDate(newReservation.checkIn)}
                     onChange={(e) => handleDateChange("checkIn", e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    disabled={loading || isErrorState}
+                    disabled={loading} // Solo se deshabilita por loading
                     min={formatDate(new Date())}
                   />
                 </div>
@@ -279,7 +289,7 @@ export default function ReservationModal({
                     value={formatDate(newReservation.checkOut)}
                     onChange={(e) => handleDateChange("checkOut", e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    disabled={loading || isErrorState}
+                    disabled={loading} // Solo se deshabilita por loading
                     min={formatDate(new Date(newReservation.checkIn.getTime() + 24 * 60 * 60 * 1000))}
                   />
                 </div>
@@ -298,7 +308,7 @@ export default function ReservationModal({
                           ? "bg-blue-600 text-white"
                           : "bg-gray-200 text-gray-800"
                       } rounded-lg hover:bg-blue-500 hover:text-white transition-colors`}
-                      disabled={loading || isErrorState}
+                      disabled={loading} // Solo se deshabilita por loading
                     >
                       {num}
                     </Button>
@@ -308,7 +318,7 @@ export default function ReservationModal({
                     className={`px-4 py-2 ${
                       showCustomGuestsInput ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"
                     } rounded-lg hover:bg-blue-500 hover:text-white transition-colors`}
-                    disabled={loading || isErrorState}
+                    disabled={loading} // Solo se deshabilita por loading
                   >
                     Más
                   </Button>
@@ -320,7 +330,7 @@ export default function ReservationModal({
                     onChange={(e) => handleInputChange("guests", parseInt(e.target.value) || 1)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     min="1"
-                    disabled={loading || isErrorState}
+                    disabled={loading} // Solo se deshabilita por loading
                   />
                 )}
               </div>
@@ -333,8 +343,8 @@ export default function ReservationModal({
               )}
 
               {availabilityError && (
-                <div className="p-2 bg-red-100 text-red-700 rounded text-sm">
-                  {availabilityError}
+                <div className="p-2 bg-orange-100 text-orange-700 rounded text-sm">
+                  {getAvailabilityMessage()}
                 </div>
               )}
 
@@ -355,12 +365,12 @@ export default function ReservationModal({
                     availableRooms.map((room) => (
                       <div
                         key={room.id}
-                        className={`p-2 border rounded text-sm transition-colors ${
+                        className={`p-2 border rounded text-sm transition-colors cursor-pointer ${
                           newReservation.roomId === room.id
                             ? "border-blue-500 bg-blue-50"
                             : "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
-                        } ${isErrorState ? "" : "cursor-pointer"}`}
-                        onClick={() => !isErrorState && handleInputChange("roomId", room.id)}
+                        }`}
+                        onClick={() => handleInputChange("roomId", room.id)}
                       >
                         <div className="flex justify-between items-center">
                           <div>
@@ -395,15 +405,10 @@ export default function ReservationModal({
                 </div>
               </div>
             </div>
-
-            {/* Información del Huésped */}
-        
           </div>
 
           {/* Precio Total */}
           <div className="space-y-4">
-           
-
             {/* Resumen de Reserva */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-medium text-gray-800 mb-3">Habitación:</h4>
@@ -411,7 +416,8 @@ export default function ReservationModal({
                 <div> {newReservation.roomId ? `Habitación ${availableRooms.find(r => r.id === newReservation.roomId)?.room_number || newReservation.roomId}` : "No seleccionada"}</div>
               </div>
             </div>
-                <div className="bg-green-50 p-4 rounded-lg space-y-4">
+            
+            <div className="bg-green-50 p-4 rounded-lg space-y-4">
               <h4 className="font-medium text-gray-800">Información del Huésped</h4>
               
               <div>
@@ -421,7 +427,7 @@ export default function ReservationModal({
                   onChange={(e) => handleInputChange("guestName", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Ingrese el nombre del huésped"
-                  disabled={loading || isErrorState}
+                  disabled={loading} // Solo se deshabilita por loading
                   required
                 />
               </div>
@@ -434,7 +440,7 @@ export default function ReservationModal({
                   onChange={(e) => handleInputChange("guestEmail", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Ingrese el email del huésped"
-                  disabled={loading || isErrorState}
+                  disabled={loading} // Solo se deshabilita por loading
                   required
                 />
               </div>
@@ -447,7 +453,7 @@ export default function ReservationModal({
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Ingrese el número de teléfono"
-                  disabled={loading || isErrorState}
+                  disabled={loading} // Solo se deshabilita por loading
                   required
                 />
               </div>
@@ -458,7 +464,7 @@ export default function ReservationModal({
                   value={newReservation.status}
                   onChange={(e) => handleInputChange("status", e.target.value as "confirmed" | "pending" | "cancelled")}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  disabled={loading || isErrorState}
+                  disabled={loading} // Solo se deshabilita por loading
                 >
                   <option value="pending">Pendiente</option>
                   <option value="confirmed">Confirmado</option>
@@ -474,7 +480,7 @@ export default function ReservationModal({
           <Button
             onClick={onSave}
             className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
-            disabled={loading || isErrorState || !isFormValid}
+            disabled={loading || hasAvailabilityError || !isFormValid} // Solo se bloquea por loading, error de disponibilidad, o formulario inválido
           >
             {loading ? (isEditing ? "Actualizando..." : "Creando...") : (isEditing ? "Actualizar Reserva" : "Crear Reserva")}
           </Button>
