@@ -12,7 +12,7 @@ import RoomManagement from "../../../components/room-management";
 import Dishmanagement from "../../../components/dish-management/dish-management";
 
 export default function HomePage() {
-  const [activeView, setActiveView] = useState("hotel-reservations");
+  const [activeView, setActiveView] = useState("restaurant-reservations");
 
  
   const renderContent = () => {

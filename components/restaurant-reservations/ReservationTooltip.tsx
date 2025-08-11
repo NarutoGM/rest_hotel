@@ -103,54 +103,58 @@ export default function ReservationTooltip({
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent className="bg-red-900 text-white p-3 rounded-lg shadow-xl">
-          <div className="space-y-1">
-            <p className="font-bold text-sm text-yellow-300">{reservation.guestName}</p>
-            <p className="text-xs text-red-400">Mesa: {reservation.tableNumber} - {reservation.tableLocation}</p>
-            <p className="text-xs text-red-300">Email: {reservation.guestEmail}</p>
-            <p className="text-xs text-red-400">Teléfono: {reservation.phone}</p>
-            <p className="text-xs text-red-400">Personas: {reservation.numberOfPeople} / {reservation.tableCapacity}</p>
-            <p className="text-xs text-red-400">
-              Inicio: {reservation.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </p>
-            <p className="text-xs text-red-400">
-              Fin: {reservation.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </p>
-            <p className="text-xs flex items-center gap-1">
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: getStatusColor() }}
-              ></span>
-              {reservation.statusDescription}
-            </p>
-            <div className="flex gap-2 mt-2 pt-2 border-t border-red-700">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditReservation(reservation);
-                }}
-                className="text-xs px-2 py-1 h-auto bg-yellow-600 hover:bg-yellow-700 text-white"
-                disabled={loading}
-              >
-                <Pencil className="w-3 h-3 mr-1" /> Editar
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteReservation(reservation.id);
-                }}
-                className="text-xs px-2 py-1 h-auto bg-red-600 hover:bg-red-700 text-white"
-                disabled={loading}
-              >
-                <Trash2 className="w-3 h-3 mr-1" /> Eliminar
-              </Button>
-            </div>
-          </div>
-        </TooltipContent>
+
+
+<TooltipContent className="bg-zinc-100 border-2 text-zinc-800 p-3 rounded-lg shadow-xl">
+  <div className="space-y-1">
+    <p className="font-bold text-sm text-yellow-600">{reservation.guestName}</p>
+    <p className="text-xs text-zinc-600">Mesa: {reservation.tableNumber} - {reservation.tableLocation}</p>
+    <p className="text-xs text-zinc-500">Email: {reservation.guestEmail}</p>
+    <p className="text-xs text-zinc-600">Teléfono: {reservation.phone}</p>
+    <p className="text-xs text-zinc-600">Personas: {reservation.numberOfPeople} / {reservation.tableCapacity}</p>
+    <p className="text-xs text-zinc-600">
+      Inicio: {reservation.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+    </p>
+    <p className="text-xs text-zinc-600">
+      Fin: {reservation.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+    </p>
+    <p className="text-xs flex items-center gap-1">
+      <span
+        className="w-2 h-2 rounded-full"
+        style={{ backgroundColor: getStatusColor() }}
+      ></span>
+      {reservation.statusDescription}
+    </p>
+    <div className="flex gap-2 mt-2 pt-2 border-t border-zinc-300">
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleEditReservation(reservation);
+        }}
+        className="text-xs px-2 py-1 h-auto bg-yellow-400 hover:bg-yellow-500 text-white"
+        disabled={loading}
+      >
+        <Pencil className="w-3 h-3 mr-1" /> Editar
+      </Button>
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDeleteReservation(reservation.id);
+        }}
+        className="text-xs px-2 py-1 h-auto bg-red-400 hover:bg-red-500 text-white"
+        disabled={loading}
+      >
+        <Trash2 className="w-3 h-3 mr-1" /> Eliminar
+      </Button>
+    </div>
+  </div>
+</TooltipContent>
+
+
       </Tooltip>
     </TooltipProvider>
   );
