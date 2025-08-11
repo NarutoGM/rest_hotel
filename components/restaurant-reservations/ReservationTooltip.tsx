@@ -1,8 +1,10 @@
 "use client";
+
 import type React from "react";
 import { Button } from "../../components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../components/ui/tooltip";
 import { Users, Pencil, Trash2 } from "lucide-react";
+import { translations } from "../translations/reservation_rest_toltip"; // Updated import
 
 interface Table {
   id: number;
@@ -54,7 +56,10 @@ export default function ReservationTooltip({
 }: ReservationTooltipProps) {
   const isStriped = reservation.status === "pending";
 
-  // Nuevo sistema de colores según estado
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
   const getStatusColor = () => {
     switch (reservation.status) {
       case "confirmed":
@@ -104,57 +109,62 @@ export default function ReservationTooltip({
           </div>
         </TooltipTrigger>
 
-
-<TooltipContent className="bg-zinc-100 border-2 text-zinc-800 p-3 rounded-lg shadow-xl">
-  <div className="space-y-1">
-    <p className="font-bold text-sm text-yellow-600">{reservation.guestName}</p>
-    <p className="text-xs text-zinc-600">Mesa: {reservation.tableNumber} - {reservation.tableLocation}</p>
-    <p className="text-xs text-zinc-500">Email: {reservation.guestEmail}</p>
-    <p className="text-xs text-zinc-600">Teléfono: {reservation.phone}</p>
-    <p className="text-xs text-zinc-600">Personas: {reservation.numberOfPeople} / {reservation.tableCapacity}</p>
-    <p className="text-xs text-zinc-600">
-      Inicio: {reservation.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-    </p>
-    <p className="text-xs text-zinc-600">
-      Fin: {reservation.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-    </p>
-    <p className="text-xs flex items-center gap-1">
-      <span
-        className="w-2 h-2 rounded-full"
-        style={{ backgroundColor: getStatusColor() }}
-      ></span>
-      {reservation.statusDescription}
-    </p>
-    <div className="flex gap-2 mt-2 pt-2 border-t border-zinc-300">
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleEditReservation(reservation);
-        }}
-        className="text-xs px-2 py-1 h-auto bg-yellow-400 hover:bg-yellow-500 text-white"
-        disabled={loading}
-      >
-        <Pencil className="w-3 h-3 mr-1" /> Editar
-      </Button>
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDeleteReservation(reservation.id);
-        }}
-        className="text-xs px-2 py-1 h-auto bg-red-400 hover:bg-red-500 text-white"
-        disabled={loading}
-      >
-        <Trash2 className="w-3 h-3 mr-1" /> Eliminar
-      </Button>
-    </div>
-  </div>
-</TooltipContent>
-
-
+        <TooltipContent className="bg-zinc-100 border-2 text-zinc-800 p-3 rounded-lg shadow-xl">
+          <div className="space-y-1">
+            <p className="font-bold text-sm text-yellow-600">{reservation.guestName}</p>
+            <p className="text-xs text-zinc-600">
+              {t.table}: {reservation.tableNumber} - {reservation.tableLocation}
+            </p>
+            <p className="text-xs text-zinc-500">
+              {t.email}: {reservation.guestEmail}
+            </p>
+            <p className="text-xs text-zinc-600">
+              {t.phone}: {reservation.phone}
+            </p>
+            <p className="text-xs text-zinc-600">
+              {t.people}: {reservation.numberOfPeople} / {reservation.tableCapacity}
+            </p>
+            <p className="text-xs text-zinc-600">
+              {t.start}: {reservation.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </p>
+            <p className="text-xs text-zinc-600">
+              {t.end}: {reservation.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </p>
+            <p className="text-xs flex items-center gap-1">
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: getStatusColor() }}
+              ></span>
+              {reservation.statusDescription}
+            </p>
+            <div className="flex gap-2 mt-2 pt-2 border-t border-zinc-300">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditReservation(reservation);
+                }}
+                className="text-xs px-2 py-1 h-auto bg-yellow-400 hover:bg-yellow-500 text-white"
+                disabled={loading}
+              >
+                <Pencil className="w-3 h-3 mr-1" /> {t.edit}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteReservation(reservation.id);
+                }}
+                className="text-xs px-2 py-1 h-auto bg-red-400 hover:bg-red-500 text-white"
+                disabled={loading}
+              >
+                <Trash2 className="w-3 h-3 mr-1" /> {t.delete}
+              </Button>
+            </div>
+          </div>
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

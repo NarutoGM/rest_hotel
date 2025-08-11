@@ -2,6 +2,7 @@
 import type React from "react";
 import { MouseEvent, useState, useEffect } from "react";
 import { Button } from "../../components/ui/button";
+import { translations } from "../translations/reservation_modal"; // New import
 
 interface Table {
   id: number;
@@ -64,7 +65,11 @@ export default function ReservationModal({
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [originalTableId, setOriginalTableId] = useState<number>(0);
 
-  const isErrorState = availabilityError === "Error al verificar disponibilidad";
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
+  const isErrorState = availabilityError === t.availabilityError;
 
   // Guardar mesa original en modo edición
   useEffect(() => {
@@ -113,7 +118,7 @@ export default function ReservationModal({
           }),
         });
 
-        if (!response.ok) throw new Error("Error al verificar disponibilidad");
+        if (!response.ok) throw new Error(t.availabilityError);
 
         const data: AvailabilityResponse = await response.json();
 
@@ -144,10 +149,10 @@ export default function ReservationModal({
             handleInputChange("tableId", 0);
           }
         } else {
-          throw new Error(data.message || "Error al verificar disponibilidad");
+          throw new Error(data.message || t.availabilityError);
         }
       } catch (error) {
-        setAvailabilityError(error instanceof Error ? error.message : "Error desconocido");
+        setAvailabilityError(error instanceof Error ? error.message : t.availabilityError);
         
         let fallbackTables = tables.filter(
           table => table.tableStatus === "available" && table.tableCapacity >= newReservation.numberOfPeople
@@ -232,8 +237,8 @@ export default function ReservationModal({
   const formatTime = (date: Date) => date.toTimeString().slice(0, 5);
 
   const getTableStatusText = (table: Table) => {
-    if (table.tableStatus === "current") return "Mesa Actual";
-    return table.tableStatus === "available" ? "Disponible" : "Ocupada";
+    if (table.tableStatus === "current") return t.currentTable;
+    return table.tableStatus === "available" ? t.availableTable : t.occupiedTable;
   };
 
   const getTableStatusClass = (table: Table) => {
@@ -248,18 +253,18 @@ export default function ReservationModal({
     <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
       <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl m-4 max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-semibold text-gray-800 mb-6">
-          {isEditing ? "Editar Reserva" : "Nueva Reserva"}
+          {isEditing ? t.editReservation : t.newReservation}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Información de la Reserva */}
           <div className="space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg space-y-4">
-              <h4 className="font-medium text-gray-800">Información de la Reserva</h4>
+              <h4 className="font-medium text-gray-800">{t.reservationInfo}</h4>
 
               {/* Fecha */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Reserva</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.reservationDate}</label>
                 <input
                   type="date"
                   value={formatDate(newReservation.startTime)}
@@ -273,7 +278,7 @@ export default function ReservationModal({
               {/* Horas */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Hora de Inicio</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t.startTime}</label>
                   <input
                     type="time"
                     value={formatTime(newReservation.startTime)}
@@ -283,7 +288,7 @@ export default function ReservationModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Hora de Fin</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t.endTime}</label>
                   <input
                     type="time"
                     value={formatTime(newReservation.endTime)}
@@ -296,7 +301,7 @@ export default function ReservationModal({
 
               {/* Número de Personas */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Número de Personas</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.numberOfPeople}</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {[1, 2, 3, 4, 5].map((num) => (
                     <Button
@@ -319,7 +324,7 @@ export default function ReservationModal({
                     } rounded hover:bg-blue-500 hover:text-white transition-colors`}
                     disabled={loading}
                   >
-                    Más
+                    {t.more}
                   </Button>
                 </div>
                 {showCustomNumInput && (
@@ -337,29 +342,29 @@ export default function ReservationModal({
               {/* Estados de disponibilidad */}
               {checkingAvailability && (
                 <div className="p-2 bg-blue-100 text-blue-700 rounded text-sm">
-                  Verificando disponibilidad...
+                  {t.checkingAvailability}
                 </div>
               )}
 
               {availabilityError && (
                 <div className="p-2 bg-red-100 text-orange-700 rounded text-sm">
-                  Intenta seleccionar otro rango de fechas
+                  {t.availabilityError}
                 </div>
               )}
 
               {/* Selección de Mesa */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seleccionar Mesa
+                  {t.selectTable}
                   {!checkingAvailability && (
                     <span className="text-xs text-green-600 ml-2">
-                      ({availableTables.length} disponible{availableTables.length !== 1 ? "s" : ""})
+                      ({availableTables.length} {availableTables.length === 1 ? t.available : t.availablePlural})
                     </span>
                   )}
                 </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto bg-white p-2 border rounded">
                   {checkingAvailability ? (
-                    <p className="text-sm text-gray-500 p-2">Verificando disponibilidad...</p>
+                    <p className="text-sm text-gray-500 p-2">{t.checkingAvailability}</p>
                   ) : availableTables.length > 0 ? (
                     availableTables.map((table) => (
                       <div
@@ -373,8 +378,8 @@ export default function ReservationModal({
                       >
                         <div className="flex justify-between items-center">
                           <div>
-                            <div className="font-medium">Mesa {table.tableNumber}</div>
-                            <div className="text-xs text-gray-600">Capacidad: {table.tableCapacity} personas</div>
+                            <div className="font-medium">{t.tableNumber} {table.tableNumber}</div>
+                            <div className="text-xs text-gray-600">{t.capacity}: {table.tableCapacity} {t.people}</div>
                             {table.tableLocation && (
                               <div className="text-xs text-gray-500">{table.tableLocation}</div>
                             )}
@@ -387,78 +392,72 @@ export default function ReservationModal({
                     ))
                   ) : (
                     <p className="text-sm text-gray-500 p-2">
-                      No hay mesas disponibles para los criterios seleccionados
+                      {t.noTablesAvailable}
                     </p>
                   )}
                 </div>
               </div>
             </div>
-
-            {/* Información del Cliente */}
-        
           </div>
 
           {/* Resumen */}
           <div className="bg-gray-50 p-4 rounded-lg">
-                        <div><strong>Mesa agendada:</strong> {newReservation.tableId ? `Mesa ${availableTables.find(t => t.id === newReservation.tableId)?.tableNumber || newReservation.tableId}` : "No seleccionada"}</div>
-
-                <div className="bg-green-50 p-4 rounded-lg space-y-4">
-              <h4 className="font-medium text-gray-800">Información del Cliente</h4>
+            <div><strong>{t.reservedTable}:</strong> {newReservation.tableId ? `${t.tableNumber} ${availableTables.find(t => t.id === newReservation.tableId)?.tableNumber || newReservation.tableId}` : t.notSelected}</div>
+            <div className="bg-green-50 p-4 rounded-lg space-y-4">
+              <h4 className="font-medium text-gray-800">{t.clientInfo}</h4>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Cliente *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.clientName}</label>
                 <input
                   value={newReservation.guestName}
                   onChange={(e) => handleInputChange("guestName", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Ingrese el nombre del cliente"
+                  placeholder={t.placeholderName}
                   disabled={loading}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.email}</label>
                 <input
                   type="email"
                   value={newReservation.guestEmail}
                   onChange={(e) => handleInputChange("guestEmail", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Ingrese el email del cliente"
+                  placeholder={t.placeholderEmail}
                   disabled={loading}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.phone}</label>
                 <input
                   type="tel"
                   value={newReservation.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Ingrese el número de teléfono"
+                  placeholder={t.placeholderPhone}
                   disabled={loading}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.status}</label>
                 <select
                   value={newReservation.status}
                   onChange={(e) => handleInputChange("status", e.target.value as "confirmed" | "pending")}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   disabled={loading}
                 >
-                  <option value="pending">Pendiente</option>
-                  <option value="confirmed">Confirmado</option>
-                  
+                  <option value="pending">{t.pending}</option>
+                  <option value="confirmed">{t.confirmed}</option>
                 </select>
               </div>
             </div>
           </div>
-          
         </div>
 
         {/* Botones */}
@@ -468,14 +467,14 @@ export default function ReservationModal({
             className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
             disabled={loading || isErrorState || !isFormValid}
           >
-            {loading ? (isEditing ? "Actualizando..." : "Creando...") : (isEditing ? "Actualizar Reserva" : "Crear Reserva")}
+            {loading ? (isEditing ? t.updating : t.creating) : (isEditing ? t.updateButton : t.saveButton)}
           </Button>
           <Button
             onClick={onClose}
             className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
             disabled={loading}
           >
-            Cancelar
+            {t.cancel}
           </Button>
         </div>
       </div>

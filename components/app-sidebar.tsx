@@ -1,8 +1,13 @@
 "use client"
 
 import type * as React from "react"
-import { Home, UtensilsCrossed,Utensils	, Hotel, Settings, LogOut } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Home, UtensilsCrossed, Utensils, Hotel, Settings, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
+
+// Importar traducciones
+import { sidebarTranslations } from "../components/translations/sidebar"
 
 import {
   Sidebar,
@@ -16,7 +21,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "../components/ui/sidebar"
-import { signOut } from "next-auth/react"
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   activeView: string
@@ -26,44 +30,57 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ activeView, setActiveView, ...props }: AppSidebarProps) {
   const router = useRouter()
 
+  // Estado para el idioma
+  const [lang, setLang] = useState<"es" | "en" | "fr">("en")
 
-const handleLogout = () => {
-  signOut({ callbackUrl: "/" }) // te redirige a /login después de cerrar sesión
-}
+  // Cargar idioma desde localStorage al montar
+  useEffect(() => {
+    const savedLang = localStorage.getItem("lang")
+    if (savedLang === "es" || savedLang === "en" || savedLang === "fr") {
+      setLang(savedLang)
+    }
+  }, [])
+
+  // Traducciones actuales
+  const t = sidebarTranslations[lang]
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" })
+  }
 
   const navigationItems = [
     {
-      title: "Reservas",
+      title: t.reservations, // "Reservas"
       items: [
         {
           id: "restaurant-reservations",
-          title: "Restaurante",
+          title: t.restaurant, // "Restaurante"
           icon: UtensilsCrossed,
         },
         {
           id: "hotel-reservations",
-          title: "Hotel",
+          title: t.hotel, // "Hotel"
           icon: Hotel,
         },
       ],
     },
     {
-      title: "Gestión",
+      title: t.management, // "Gestión"
       items: [
         {
           id: "table-management",
-          title: "Mesas",
+          title: t.tables, // "Mesas"
           icon: Home,
         },
         {
           id: "room-management",
-          title: "Habitaciones",
+          title: t.rooms, // "Habitaciones"
           icon: Settings,
         },
         {
           id: "dish-management",
-          title: "Dish",
-          icon: Utensils	,
+          title: t.dishes, // "Platos"
+          icon: Utensils,
         },
       ],
     },
@@ -72,7 +89,7 @@ const handleLogout = () => {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="p-2 text-lg font-bold">Sistema de Reservas</div>
+        <div className="p-2 text-lg font-bold">{t.systemName}</div>
       </SidebarHeader>
       <SidebarContent>
         {navigationItems.map((group) => (
@@ -98,13 +115,13 @@ const handleLogout = () => {
 
         {/* Botón de Logout */}
         <SidebarGroup>
-          <SidebarGroupLabel>Cuenta</SidebarGroupLabel>
+          <SidebarGroupLabel>{t.account}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleLogout}>
                   <LogOut />
-                  <span>Cerrar sesión</span>
+                  <span>{t.logout}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

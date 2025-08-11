@@ -1,0 +1,36 @@
+// translations/reservation_tooltip.ts
+export const translations = {
+  es: {
+    guestName: "Nombre del invitado",
+    table: "Mesa",
+    email: "Email",
+    phone: "Teléfono",
+    people: "Personas",
+    start: "Inicio",
+    end: "Fin",
+    edit: "Editar",
+    delete: "Eliminar",
+  },
+  en: {
+    guestName: "Guest Name",
+    table: "Table",
+    email: "Email",
+    phone: "Phone",
+    people: "People",
+    start: "Start",
+    end: "End",
+    edit: "Edit",
+    delete: "Delete",
+  },
+  fr: {
+    guestName: "Nom de l'invité",
+    table: "Tableau",
+    email: "Email",
+    phone: "Téléphone",
+    people: "Personnes",
+    start: "Début",
+    end: "Fin",
+    edit: "Modifier",
+    delete: "Supprimer",
+  },
+};
