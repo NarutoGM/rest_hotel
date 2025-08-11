@@ -75,7 +75,7 @@ export default function RestaurantReservations({ initialDate = new Date() }: Res
   const normalizedInitialDate = new Date(initialDate.getFullYear(), initialDate.getMonth(), initialDate.getDate());
   const [reservations, setReservations] = useState<RestaurantReservation[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
-  const [currentTimeLinePosition, setCurrentTimeLinePosition] = useState(-1);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,16 +95,7 @@ export default function RestaurantReservations({ initialDate = new Date() }: Res
   });
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  const updateTimeLine = () => {
-    if (timelineRef.current) {
-      const now = new Date();
-      if (now.toDateString() === currentDate.toDateString() && now.getHours() >= MIN_HOUR && now.getHours() <= 20) {
-        setCurrentTimeLinePosition((now.getHours() + now.getMinutes() / 60 - MIN_HOUR) * HOUR_WIDTH_PX);
-      } else {
-        setCurrentTimeLinePosition(-1);
-      }
-    }
-  };
+
 
   useEffect(() => {
     const fetchTables = async () => {
@@ -134,39 +125,33 @@ export default function RestaurantReservations({ initialDate = new Date() }: Res
     fetchTables();
   }, []);
 
-
-      const fetchReservations = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch("/api/reservations-rest");
-        if (!response.ok) throw new Error("Error al cargar las reservas");
-        const data = await response.json();
-        setReservations(
-          data
-            .map((res: any) => ({
-              ...res,
-              startTime: convertUTCToLocal(res.startTime),
-              endTime: convertUTCToLocal(res.endTime),
-            }))
-            .filter((res: RestaurantReservation) => res.startTime.toDateString() === currentDate.toDateString())
-        );
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  const fetchReservations = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/reservations-rest");
+      if (!response.ok) throw new Error("Error al cargar las reservas");
+      const data = await response.json();
+      setReservations(
+        data
+          .map((res: any) => ({
+            ...res,
+            startTime: convertUTCToLocal(res.startTime),
+            endTime: convertUTCToLocal(res.endTime),
+          }))
+          .filter((res: RestaurantReservation) => res.startTime.toDateString() === currentDate.toDateString())
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchReservations();
   }, [currentDate]);
 
-  useEffect(() => {
-    updateTimeLine();
-    const interval = setInterval(updateTimeLine, 60 * 1000);
-    return () => clearInterval(interval);
-  }, [currentDate]);
+
 
   const handleEditReservation = (reservation: RestaurantReservation) => {
     setNewReservation({
@@ -278,8 +263,6 @@ export default function RestaurantReservations({ initialDate = new Date() }: Res
           : [...prev, { ...newRes, startTime: convertUTCToLocal(newRes.startTime), endTime: convertUTCToLocal(newRes.endTime) }]
       );
       setIsModalOpen(false);
-            fetchReservations();
-
       fetchReservations();
       resetModalState();
     } catch (err) {
@@ -334,89 +317,129 @@ export default function RestaurantReservations({ initialDate = new Date() }: Res
   };
 
   return (
-    <div className="p-4 border rounded-lg bg-white">
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg shadow">{error}</div>}
-      {loading && <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded-lg shadow">Cargando...</div>}
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Button onClick={handlePreviousDay} className="bg-gray-200 text-gray-800 hover:bg-gray-300" disabled={loading}>
-            <ChevronLeft className="w-4 h-4" />
-            Día Anterior
-          </Button>
-          <input
-            type="date"
-            value={formatLocalDate(currentDate)}
-            onChange={handleDatePickerChange}
-            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            disabled={loading}
-          />
-          <Button onClick={handleNextDay} className="bg-gray-200 text-gray-800 hover:bg-gray-300" disabled={loading}>
-            Día Siguiente
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-        <Button onClick={handleManualAddReservation} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white" disabled={loading || !tables.length}>
-          <Plus className="w-4 h-4" />
-          Agregar Reserva
-        </Button>
-      </div>
+    <div className="p-2 sm:p-4 border rounded-lg bg-white">
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg shadow text-sm">{error}</div>}
+      {loading && <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded-lg shadow text-sm">Cargando...</div>}
+      
+{/* Header responsive */}
+<div className="mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+  <div className="flex flex-col lg:flex-row items-start lg:items-center gap-2 w-full lg:w-auto">
+
+    <div className="flex items-center gap-2">
+            <Button 
+    onClick={handleManualAddReservation} 
+    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-4  justify-center" 
+    disabled={loading || !tables.length}
+  >
+    <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+    <span className="hidden sm:inline">Agregar Reserva</span>
+    <span className="sm:hidden">Agregar</span>
+  </Button>
+      <Button 
+        onClick={handlePreviousDay} 
+        className="bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm px-2 sm:px-4" 
+        disabled={loading}
+      >
+        <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+        <span className="hidden sm:inline">Día Anterior</span>
+        <span className="sm:hidden">Ant.</span>
+      </Button>
+      <input
+        type="date"
+        value={formatLocalDate(currentDate)}
+        onChange={handleDatePickerChange}
+        className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs sm:text-sm w-full sm:w-auto"
+        disabled={loading}
+      />
+      <Button 
+        onClick={handleNextDay} 
+        className="bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm px-2 sm:px-4" 
+        disabled={loading}
+      >
+        <span className="hidden sm:inline">Día Siguiente</span>
+        <span className="sm:hidden">Sig.</span>
+        <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+      </Button>
+    </div>
+  </div>
+
+</div>
+
+
+      {/* Tabla con scroll horizontal */}
       <div className="border rounded-lg overflow-hidden">
-        <div className="bg-gray-100 border-b grid grid-cols-[150px_1fr]">
-          <div className="p-3 font-semibold border-r bg-gray-100 flex items-center justify-center">Mesa</div>
-          <div className="grid grid-cols-13">
-            {HOURS.map((hour) => (
-              <div key={hour} className="p-3 text-center font-semibold border-r last:border-r-0 bg-gray-100 flex items-center justify-center">
-                {String(hour).padStart(2, "0")}:00
+        <div className="overflow-x-auto">
+          <div className="min-w-[900px]"> {/* Ancho mínimo para mantener la funcionalidad */}
+            {/* Header de la tabla */}
+            <div className="bg-gray-100 border-b grid" style={{ gridTemplateColumns: '150px 1fr' }}>
+              <div className="p-2 sm:p-3 font-semibold border-r bg-gray-100 flex items-center justify-center text-xs sm:text-sm">
+                Mesa
               </div>
-            ))}
-          </div>
-        </div>
-        <div className="relative">
-          {currentTimeLinePosition !== -1 && (
-            <div
-              className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-30"
-              style={{ left: `calc(150px + ${currentTimeLinePosition}px)` }}
-            />
-          )}
-          {tables.map((table) => (
-            <div key={table.id} className="border-b last:border-b-0 grid grid-cols-[150px_1fr]">
-              <div className="p-3 border-r bg-gray-50 flex flex-col justify-center">
-                <div className="font-medium text-sm">Mesa {table.tableNumber}</div>
-                <div className="text-xs text-gray-600">Hasta {table.tableCapacity} personas</div>
-                {table.tableLocation && <div className="text-xs text-gray-500">{table.tableLocation}</div>}
-                <div className={`text-xs ${table.tableStatus === "available" ? "text-green-500" : "text-red-500"}`}>
-                  {table.tableStatus === "available" ? "Disponible" : "No disponible"}
-                </div>
-              </div>
-              <div ref={timelineRef} className="relative grid grid-cols-13 cursor-pointer" onClick={(e) => handleTableClick(e, table)}>
+              <div className="grid grid-cols-13">
                 {HOURS.map((hour) => (
-                  <div key={hour} className="border-r last:border-r-0 h-20 hover:bg-gray-50 transition-colors" />
+                  <div 
+                    key={hour} 
+                    className="p-1 sm:p-3 text-center font-semibold border-r last:border-r-0 bg-gray-100 flex items-center justify-center text-xs sm:text-sm"
+                  >
+                    {String(hour).padStart(2, "0")}:00
+                  </div>
                 ))}
-                {reservations
-                  .filter((res) => res.tableId === table.id && res.startTime.toDateString() === currentDate.toDateString())
-                  .map((reservation) => {
-                    const startHour = reservation.startTime.getHours() + reservation.startTime.getMinutes() / 60;
-                    const endHour = reservation.endTime.getHours() + reservation.endTime.getMinutes() / 60;
-                    const leftPercent = ((startHour - MIN_HOUR) / HOURS.length) * 100;
-                    const widthPercent = ((endHour - startHour) / HOURS.length) * 100;
-                    return (
-                      <ReservationTooltip
-                        key={reservation.id}
-                        tables={tables}
-                        reservation={reservation}
-                        handleEditReservation={handleEditReservation}
-                        handleDeleteReservation={handleDeleteReservation}
-                        loading={loading}
-                        leftPercent={leftPercent}
-                        widthPercent={widthPercent}
-                      />
-                    );
-                  })}
               </div>
             </div>
-          ))}
+
+
+              
+              {tables.map((table) => (
+                <div key={table.id} className="border-b last:border-b-0 grid" style={{ gridTemplateColumns: '150px 1fr' }}>
+                  <div className="p-2 sm:p-3 border-r bg-gray-50 flex flex-col justify-center">
+                    <div className="font-medium text-xs sm:text-sm">Mesa {table.tableNumber}</div>
+                    <div className="text-xs text-gray-600">Hasta {table.tableCapacity} personas</div>
+                    {table.tableLocation && <div className="text-xs text-gray-500">{table.tableLocation}</div>}
+                    <div className={`text-xs ${table.tableStatus === "available" ? "text-green-500" : "text-red-500"}`}>
+                      {table.tableStatus === "available" ? "Disponible" : "No disponible"}
+                    </div>
+                  </div>
+                  
+                  <div 
+                    ref={timelineRef} 
+                    className="relative grid grid-cols-13 cursor-pointer" 
+                    onClick={(e) => handleTableClick(e, table)}
+                  >
+                    {HOURS.map((hour) => (
+                      <div 
+                        key={hour} 
+                        className="border-r last:border-r-0 h-16 sm:h-20 hover:bg-gray-50 transition-colors" 
+                      />
+                    ))}
+                    
+                    {reservations
+                      .filter((res) => res.tableId === table.id && res.startTime.toDateString() === currentDate.toDateString())
+                      .map((reservation) => {
+                        const startHour = reservation.startTime.getHours() + reservation.startTime.getMinutes() / 60;
+                        const endHour = reservation.endTime.getHours() + reservation.endTime.getMinutes() / 60;
+                        const leftPercent = ((startHour - MIN_HOUR) / HOURS.length) * 100;
+                        const widthPercent = ((endHour - startHour) / HOURS.length) * 100;
+                        return (
+                          <ReservationTooltip
+                            key={reservation.id}
+                            tables={tables}
+                            reservation={reservation}
+                            handleEditReservation={handleEditReservation}
+                            handleDeleteReservation={handleDeleteReservation}
+                            loading={loading}
+                            leftPercent={leftPercent}
+                            widthPercent={widthPercent}
+                          />
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
+              
+            </div>
+          </div>
         </div>
-      </div>
+
       <ReservationModal
         isOpen={isModalOpen}
         isEditing={isEditing}

@@ -367,172 +367,182 @@ export default function HotelReservations({
   };
 
   return (
-    <div className="p-4 border rounded-lg bg-white">
+    <div className="p-2 sm:p-4 border rounded-lg bg-white">
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg shadow">
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg shadow text-sm">
           {error}
         </div>
       )}
       {loading && (
-        <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded-lg shadow">
+        <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded-lg shadow text-sm">
           Cargando...
         </div>
       )}
 
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handlePreviousWeek}
-            className="bg-gray-200 text-zinc-800 hover:bg-gray-300"
-            disabled={loading}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Semana Anterior
-          </Button>
-          <input
-            type="date"
-            value={formatDate(currentStartDate)}
-            onChange={handleDatePickerChange}
-            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            disabled={loading}
-          />
-          <Button
-            onClick={handleNextWeek}
-            className="bg-gray-200 text-zinc-800 hover:bg-gray-300"
-            disabled={loading}
-          >
-            Próxima Semana
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <span className="text-sm text-zinc-600 ml-4">
-            {formatDisplayDate(days[0] || currentStartDate)} - {formatDisplayDate(days[days.length - 1] || currentStartDate)}
-          </span>
-        </div>
-        <Button
+      {/* Header responsive */}
+      <div className="mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full lg:w-auto">
+          <div className="flex items-center gap-2 ">
+                    <Button
           onClick={handleNewReservationClick}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-4 sm:w-auto justify-center"
           disabled={loading || rooms.length === 0}
         >
-          <Plus className="w-4 h-4" />
-          Nueva Reserva
+          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline">Nueva Reserva</span>
+          <span className="sm:hidden">Nueva</span>
         </Button>
-      </div>
-
-      <div className="border rounded-lg overflow-hidden">
-        {/* Header con días */}
-        <div className="bg-gray-100 border-b grid grid-cols-[200px_1fr]">
-          <div className="p-3 font-semibold border-r bg-gray-100 flex items-center justify-center">
-            Habitación
+            <Button
+              onClick={handlePreviousWeek}
+              className="bg-gray-200 text-zinc-800 hover:bg-gray-300 text-xs sm:text-sm px-2 sm:px-4"
+              disabled={loading}
+            >
+              <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Semana Anterior</span>
+              <span className="sm:hidden">Ant.</span>
+            </Button>
+            <input
+              type="date"
+              value={formatDate(currentStartDate)}
+              onChange={handleDatePickerChange}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs sm:text-sm flex-1 sm:flex-none"
+              disabled={loading}
+            />
+            <Button
+              onClick={handleNextWeek}
+              className="bg-gray-200 text-zinc-800 hover:bg-gray-300 text-xs sm:text-sm px-2 sm:px-4"
+              disabled={loading}
+            >
+              <span className="hidden sm:inline">Próxima Semana</span>
+              <span className="sm:hidden">Sig.</span>
+              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+            </Button>
           </div>
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
-            {days.map((day, index) => (
-              <div
-                key={index}
-                className="p-2 text-center font-semibold border-r last:border-r-0 bg-gray-100 flex flex-col items-center justify-center"
-              >
-                <div className="text-xs text-zinc-500">{getDayName(day)}</div>
-                <div className="text-sm">{formatDisplayDate(day)}</div>
-              </div>
-            ))}
-          </div>
+        
         </div>
 
-        {/* Filas de habitaciones */}
-        <div className="relative">
-          {rooms.map((room) => (
-            <div key={room.id} className="border-b last:border-b-0 grid grid-cols-[200px_1fr]">
-              <div className="p-3 border-r bg-gray-50 flex flex-col justify-center">
-                <div className="font-medium text-sm">{room.room_number}</div>
-                <div className="text-xs text-zinc-600">
-                  {room.room_type} • {room.capacity} {room.capacity === 1 ? 'huésped' : 'huéspedes'} • {room.number_of_beds} {room.number_of_beds === 1 ? 'cama' : 'camas'}
-                </div>
-                <div className="text-xs text-green-600 font-medium">
-                  ${room.price_per_night}/noche
-                </div>
-                <div className="text-xs text-zinc-600">
-                  {room.has_wifi && 'WiFi • '}
-                  {room.has_air_conditioning && 'A/C • '}
-                  {room.has_tv && 'TV • '}
-                  {room.has_minibar && 'Minibar • '}
-                  {room.has_balcony && 'Balcón'}
-                </div>
-                <div className={`text-xs ${room.status ? 'text-green-500' : 'text-red-500'}`}>
-                  {room.status ? 'Disponible' : 'Fuera de servicio'}
-                </div>
-              </div>
+      </div>
 
-              <div
-                ref={timelineRef}
-                className="relative cursor-pointer"
-                style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: `repeat(${days.length}, 1fr)` 
-                }}
-                onClick={(e) => handleRoomClick(e, room)}
-              >
+      {/* Tabla con scroll horizontal */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[1200px]"> {/* Ancho mínimo para mantener funcionalidad */}
+            {/* Header con días */}
+            <div className="bg-gray-100 border-b grid" style={{ gridTemplateColumns: '200px 1fr' }}>
+              <div className="p-2 sm:p-3 font-semibold border-r bg-gray-100 flex items-center justify-center text-xs sm:text-sm">
+                Habitación
+              </div>
+              <div className="grid" style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
                 {days.map((day, index) => (
                   <div
                     key={index}
-                    className="border-r last:border-r-0 h-20 hover:bg-blue-50 transition-colors flex items-center justify-center"
+                    className="p-1 sm:p-2 text-center font-semibold border-r last:border-r-0 bg-gray-100 flex flex-col items-center justify-center"
                   >
-                    {/* Aquí irán las reservas cuando implementemos el tooltip */}
+                    <div className="text-xs text-zinc-500">{getDayName(day)}</div>
+                    <div className="text-xs sm:text-sm">{formatDisplayDate(day)}</div>
                   </div>
                 ))}
-
-                {filteredReservations
-                  .filter((res) => res.roomId === room.id)
-                  .map((reservation) => {
-                    // CAMBIO AQUÍ: usar isSameDate para comparar fechas
-                    const checkInDay = days.findIndex(day =>
-                      isSameDate(day, reservation.checkIn)
-                    );
-                    const checkOutDay = days.findIndex(day =>
-                      isSameDate(day, reservation.checkOut)
-                    );
-
-                    // Si la reserva está completamente fuera del rango visible, no la mostramos
-                    if (checkInDay === -1 && checkOutDay === -1) {
-                      // Verificar si la reserva abarca todo el rango visible
-                      const firstDay = days[0];
-                      const lastDay = days[days.length - 1];
-                      const reservaSpansRange = reservation.checkIn < firstDay && reservation.checkOut > lastDay;
-                      if (!reservaSpansRange) return null;
-                    }
-
-                    // Asegurar que los índices estén dentro del rango visible
-                    const startIndex = Math.max(0, checkInDay >= 0 ? checkInDay : 0);
-                    const endIndex = Math.min(days.length - 1, checkOutDay >= 0 ? checkOutDay : days.length - 1);
-
-                    // Ajuste visual: comenzar desde la mitad de la celda si el check-in está en rango
-                    const startOffset = checkInDay >= 0 ? 0.5 : 0;
-
-                    // Ajuste visual: terminar en la mitad de la celda si el check-out está en rango
-                    const endOffset = checkOutDay >= 0 && checkOutDay < days.length ? 0.5 : 0;
-
-                    // Calcular posición izquierda y ancho en porcentaje
-                    const leftPercent = ((startIndex + startOffset) / days.length) * 100;
-                    const widthPercent = ((endIndex - startIndex + endOffset - startOffset) / days.length) * 100;
-
-                    // Asegurar un ancho mínimo para que se vea en la UI
-                    const minWidthPercent = (0.5 / days.length) * 100;
-                    const finalWidthPercent = Math.max(widthPercent, minWidthPercent);
-
-                    return (
-                      <ReservationTooltip
-                        key={reservation.id}
-                        reservation={reservation}
-                        rooms={rooms}
-                        handleEditReservation={handleEditReservation}
-                        handleDeleteReservation={handleDeleteReservation}
-                        loading={loading}
-                        leftPercent={leftPercent}
-                        widthPercent={finalWidthPercent}
-                      />
-                    );
-                  })}
               </div>
             </div>
-          ))}
+
+            {/* Filas de habitaciones */}
+            <div className="relative">
+              {rooms.map((room) => (
+                <div key={room.id} className="border-b last:border-b-0 grid" style={{ gridTemplateColumns: '200px 1fr' }}>
+                  <div className="p-2 sm:p-3 border-r bg-gray-50 flex flex-col justify-center">
+                    <div className="font-medium text-xs sm:text-sm">{room.room_number}</div>
+                    <div className="text-xs text-zinc-600">
+                      {room.room_type} • {room.capacity} {room.capacity === 1 ? 'huésped' : 'huéspedes'} • {room.number_of_beds} {room.number_of_beds === 1 ? 'cama' : 'camas'}
+                    </div>
+                    <div className="text-xs text-green-600 font-medium">
+                      ${room.price_per_night}/noche
+                    </div>
+                    <div className="text-xs text-zinc-600 hidden sm:block">
+                      {room.has_wifi && 'WiFi • '}
+                      {room.has_air_conditioning && 'A/C • '}
+                      {room.has_tv && 'TV • '}
+                      {room.has_minibar && 'Minibar • '}
+                      {room.has_balcony && 'Balcón'}
+                    </div>
+                    <div className={`text-xs ${room.status ? 'text-green-500' : 'text-red-500'}`}>
+                      {room.status ? 'Disponible' : 'Fuera de servicio'}
+                    </div>
+                  </div>
+
+                  <div
+                    ref={timelineRef}
+                    className="relative cursor-pointer"
+                    style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: `repeat(${days.length}, 1fr)` 
+                    }}
+                    onClick={(e) => handleRoomClick(e, room)}
+                  >
+                    {days.map((day, index) => (
+                      <div
+                        key={index}
+                        className="border-r last:border-r-0 h-16 sm:h-20 hover:bg-blue-50 transition-colors flex items-center justify-center"
+                      >
+                        {/* Aquí irán las reservas cuando implementemos el tooltip */}
+                      </div>
+                    ))}
+
+                    {filteredReservations
+                      .filter((res) => res.roomId === room.id)
+                      .map((reservation) => {
+                        // CAMBIO AQUÍ: usar isSameDate para comparar fechas
+                        const checkInDay = days.findIndex(day =>
+                          isSameDate(day, reservation.checkIn)
+                        );
+                        const checkOutDay = days.findIndex(day =>
+                          isSameDate(day, reservation.checkOut)
+                        );
+
+                        // Si la reserva está completamente fuera del rango visible, no la mostramos
+                        if (checkInDay === -1 && checkOutDay === -1) {
+                          // Verificar si la reserva abarca todo el rango visible
+                          const firstDay = days[0];
+                          const lastDay = days[days.length - 1];
+                          const reservaSpansRange = reservation.checkIn < firstDay && reservation.checkOut > lastDay;
+                          if (!reservaSpansRange) return null;
+                        }
+
+                        // Asegurar que los índices estén dentro del rango visible
+                        const startIndex = Math.max(0, checkInDay >= 0 ? checkInDay : 0);
+                        const endIndex = Math.min(days.length - 1, checkOutDay >= 0 ? checkOutDay : days.length - 1);
+
+                        // Ajuste visual: comenzar desde la mitad de la celda si el check-in está en rango
+                        const startOffset = checkInDay >= 0 ? 0.5 : 0;
+
+                        // Ajuste visual: terminar en la mitad de la celda si el check-out está en rango
+                        const endOffset = checkOutDay >= 0 && checkOutDay < days.length ? 0.5 : 0;
+
+                        // Calcular posición izquierda y ancho en porcentaje
+                        const leftPercent = ((startIndex + startOffset) / days.length) * 100;
+                        const widthPercent = ((endIndex - startIndex + endOffset - startOffset) / days.length) * 100;
+
+                        // Asegurar un ancho mínimo para que se vea en la UI
+                        const minWidthPercent = (0.5 / days.length) * 100;
+                        const finalWidthPercent = Math.max(widthPercent, minWidthPercent);
+
+                        return (
+                          <ReservationTooltip
+                            key={reservation.id}
+                            reservation={reservation}
+                            rooms={rooms}
+                            handleEditReservation={handleEditReservation}
+                            handleDeleteReservation={handleDeleteReservation}
+                            loading={loading}
+                            leftPercent={leftPercent}
+                            widthPercent={finalWidthPercent}
+                          />
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
