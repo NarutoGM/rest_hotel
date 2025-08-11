@@ -194,12 +194,10 @@ export default function ReservationModal({
   };
 
   const handleInputChange = (field: string, value: any) => {
-    if (isErrorState) return;
     onReservationChange({ ...newReservation, [field]: value });
   };
 
   const handleTimeChange = (field: "startTime" | "endTime", timeString: string) => {
-    if (isErrorState) return;
     const [hours, minutes] = timeString.split(":").map(Number);
     if (isNaN(hours) || isNaN(minutes)) return;
     const newTime = new Date(newReservation[field]);
@@ -208,7 +206,7 @@ export default function ReservationModal({
   };
 
   const handleDateChange = (dateString: string) => {
-    if (isErrorState || !dateString) return;
+    if (!dateString) return;
 
     const [year, month, day] = dateString.split("-").map(Number);
     const newDate = new Date(year, month - 1, day);
@@ -226,7 +224,6 @@ export default function ReservationModal({
   };
 
   const handleNumPeople = (num: number) => {
-    if (isErrorState) return;
     handleInputChange("numberOfPeople", num);
     setShowCustomNumInput(num > 5);
   };
@@ -268,7 +265,7 @@ export default function ReservationModal({
                   value={formatDate(newReservation.startTime)}
                   onChange={(e) => handleDateChange(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  disabled={loading || isErrorState}
+                  disabled={loading}
                   min={formatDate(new Date())}
                 />
               </div>
@@ -282,7 +279,7 @@ export default function ReservationModal({
                     value={formatTime(newReservation.startTime)}
                     onChange={(e) => handleTimeChange("startTime", e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    disabled={loading || isErrorState}
+                    disabled={loading}
                   />
                 </div>
                 <div>
@@ -292,7 +289,7 @@ export default function ReservationModal({
                     value={formatTime(newReservation.endTime)}
                     onChange={(e) => handleTimeChange("endTime", e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    disabled={loading || isErrorState}
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -310,7 +307,7 @@ export default function ReservationModal({
                           ? "bg-blue-600 text-white"
                           : "bg-gray-200 text-gray-800"
                       } rounded hover:bg-blue-500 hover:text-white transition-colors`}
-                      disabled={loading || isErrorState}
+                      disabled={loading}
                     >
                       {num}
                     </Button>
@@ -320,7 +317,7 @@ export default function ReservationModal({
                     className={`px-3 py-1 text-sm ${
                       showCustomNumInput ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"
                     } rounded hover:bg-blue-500 hover:text-white transition-colors`}
-                    disabled={loading || isErrorState}
+                    disabled={loading}
                   >
                     Más
                   </Button>
@@ -332,7 +329,7 @@ export default function ReservationModal({
                     onChange={(e) => handleInputChange("numberOfPeople", parseInt(e.target.value) || 1)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     min="1"
-                    disabled={loading || isErrorState}
+                    disabled={loading}
                   />
                 )}
               </div>
@@ -345,8 +342,8 @@ export default function ReservationModal({
               )}
 
               {availabilityError && (
-                <div className="p-2 bg-red-100 text-red-700 rounded text-sm">
-                  {availabilityError}
+                <div className="p-2 bg-red-100 text-orange-700 rounded text-sm">
+                  Intenta seleccionar otro rango de fechas
                 </div>
               )}
 
@@ -371,8 +368,8 @@ export default function ReservationModal({
                           newReservation.tableId === table.id
                             ? "border-blue-500 bg-blue-50"
                             : "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
-                        } ${isErrorState ? "" : "cursor-pointer"}`}
-                        onClick={() => !isErrorState && handleInputChange("tableId", table.id)}
+                        } cursor-pointer`}
+                        onClick={() => handleInputChange("tableId", table.id)}
                       >
                         <div className="flex justify-between items-center">
                           <div>
@@ -415,7 +412,7 @@ export default function ReservationModal({
                   onChange={(e) => handleInputChange("guestName", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Ingrese el nombre del cliente"
-                  disabled={loading || isErrorState}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -428,7 +425,7 @@ export default function ReservationModal({
                   onChange={(e) => handleInputChange("guestEmail", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Ingrese el email del cliente"
-                  disabled={loading || isErrorState}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -441,7 +438,7 @@ export default function ReservationModal({
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Ingrese el número de teléfono"
-                  disabled={loading || isErrorState}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -452,7 +449,7 @@ export default function ReservationModal({
                   value={newReservation.status}
                   onChange={(e) => handleInputChange("status", e.target.value as "confirmed" | "pending")}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  disabled={loading || isErrorState}
+                  disabled={loading}
                 >
                   <option value="pending">Pendiente</option>
                   <option value="confirmed">Confirmado</option>
