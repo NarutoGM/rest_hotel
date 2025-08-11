@@ -65,6 +65,7 @@ export default function DishManagement() {
     }
   };
 
+  
   const fetchCategories = async () => {
     setLoading(true);
     try {
