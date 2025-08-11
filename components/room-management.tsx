@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState, useEffect, MouseEvent } from "react";
+import { translations } from "../components/translations/room_management"; // New import
 
 interface Room {
   id: string;
@@ -19,9 +20,13 @@ interface Room {
 }
 
 export default function RoomManagement() {
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
   const [rooms, setRooms] = useState<Room[]>([]);
   const [newRoomNumber, setNewRoomNumber] = useState("");
-const [newRoomType, setNewRoomType] = useState("Estándar");
+  const [newRoomType, setNewRoomType] = useState("Estándar");
   const [newRoomCapacity, setNewRoomCapacity] = useState<number | "">(2);
   const [newRoomBeds, setNewRoomBeds] = useState<number | "">(1);
   const [newRoomWifi, setNewRoomWifi] = useState<boolean>(true);
@@ -46,12 +51,12 @@ const [newRoomType, setNewRoomType] = useState("Estándar");
     setLoading(true);
     try {
       const response = await fetch("/api/room");
-      if (!response.ok) throw new Error("Error al cargar las habitaciones");
+      if (!response.ok) throw new Error(t.errorLoadingRooms);
       const data = await response.json();
       console.log("Datos de habitaciones recibidos:", data);
       setRooms(data.data || []); // Set rooms to data.data, default to empty array if undefined
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
       setRooms([]); // Ensure rooms is an array on error
     } finally {
       setLoading(false);
@@ -60,27 +65,27 @@ const [newRoomType, setNewRoomType] = useState("Estándar");
 
   const handleAddRoom = async () => {
     if (newRoomNumber.trim() === "") {
-      alert("El número de la habitación no puede estar vacío.");
+      alert(t.roomNumberEmpty);
       return;
     }
     if (newRoomType.trim() === "") {
-      alert("El tipo de habitación no puede estar vacío.");
+      alert(t.roomTypeEmpty);
       return;
     }
     if (!newRoomCapacity || newRoomCapacity <= 0) {
-      alert("Por favor, ingrese una capacidad válida mayor a 0.");
+      alert(t.invalidCapacity);
       return;
     }
     if (!newRoomBeds || newRoomBeds <= 0) {
-      alert("Por favor, ingrese un número de camas válido mayor a 0.");
+      alert(t.invalidBeds);
       return;
     }
     if (!newRoomPrice || newRoomPrice <= 0) {
-      alert("Por favor, ingrese un precio válido mayor a 0.");
+      alert(t.invalidPrice);
       return;
     }
     if (newRoomImages.length === 0) {
-      alert("Debe proporcionar al menos una imagen para la habitación.");
+      alert(t.noImages);
       return;
     }
 
@@ -110,7 +115,7 @@ const [newRoomType, setNewRoomType] = useState("Estándar");
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error("Error al actualizar la habitación");
+        if (!response.ok) throw new Error(t.errorUpdatingRoom);
         await fetchRooms();
         setEditingRoomId(null);
       } else {
@@ -119,7 +124,7 @@ const [newRoomType, setNewRoomType] = useState("Estándar");
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error("Error al agregar la habitación");
+        if (!response.ok) throw new Error(t.errorAddingRoom);
         await fetchRooms();
       }
       setNewRoomNumber("");
@@ -137,7 +142,7 @@ const [newRoomType, setNewRoomType] = useState("Estándar");
       setNewImageUrl("");
       setIsModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -162,16 +167,16 @@ const [newRoomType, setNewRoomType] = useState("Estándar");
   };
 
   const handleDeleteRoom = async (id: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar esta habitación?")) {
+    if (confirm(t.deleteConfirm)) {
       setLoading(true);
       try {
         const response = await fetch(`/api/room/${id}`, {
           method: "DELETE",
         });
-        if (!response.ok) throw new Error("Error al eliminar la habitación");
+        if (!response.ok) throw new Error(t.errorDeletingRoom);
         await fetchRooms();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t.errorUnknown);
       } finally {
         setLoading(false);
       }
@@ -182,7 +187,7 @@ const [newRoomType, setNewRoomType] = useState("Estándar");
     setIsModalOpen(false);
     setEditingRoomId(null);
     setNewRoomNumber("");
-setNewRoomType("Estándar");
+    setNewRoomType("Estándar");
     setNewRoomCapacity(2);
     setNewRoomBeds(1);
     setNewRoomWifi(true);
@@ -238,16 +243,16 @@ setNewRoomType("Estándar");
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">
-                🏨 Gestión de Habitaciones
+                🏨 {t.roomManagement}
               </h1>
-              <p className="text-gray-600 mt-2">Administra las habitaciones de tu establecimiento de forma fácil y visual</p>
+              <p className="text-gray-600 mt-2">{t.manageRooms}</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
               className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
               disabled={loading}
             >
-              ✨ Agregar Habitación
+              ✨ {t.addRoom}
             </button>
           </div>
 
@@ -258,7 +263,7 @@ setNewRoomType("Estándar");
                   <span className="text-yellow-600 text-xl">🛏️</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Total Habitaciones</p>
+                  <p className="text-gray-600 text-sm">{t.totalRooms}</p>
                   <p className="text-2xl font-bold text-gray-800">{rooms.length}</p>
                 </div>
               </div>
@@ -269,7 +274,7 @@ setNewRoomType("Estándar");
                   <span className="text-green-600 text-xl">💰</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Precio Promedio</p>
+                  <p className="text-gray-600 text-sm">{t.averagePrice}</p>
                   <p className="text-2xl font-bold text-gray-800">
                     ${rooms.length > 0 ? (rooms.reduce((acc, room) => acc + parseFloat(room.price_per_night), 0) / rooms.length).toFixed(2) : '0.00'}
                   </p>
@@ -282,7 +287,7 @@ setNewRoomType("Estándar");
                   <span className="text-purple-600 text-xl">📷</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Total Imágenes</p>
+                  <p className="text-gray-600 text-sm">{t.totalImages}</p>
                   <p className="text-2xl font-bold text-gray-800">
                     {rooms.reduce((acc, room) => acc + room.images.length, 0)}
                   </p>
@@ -301,122 +306,118 @@ setNewRoomType("Estándar");
         {loading && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl shadow-sm flex items-center">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-600 mr-3"></div>
-            Cargando...
+            {t.loading}
           </div>
         )}
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {rooms.map((room) => (
-    <div
-      key={room.id}
-      className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-    >
-      <div className="relative h-48 bg-gray-100">
-        {room.images.length > 0 ? (
-          <div className="relative h-full">
-            <img
-              src={room.images[0].image_url}
-              alt={room.room_number}
-              className="w-full h-full object-cover"
-              onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
-            />
-            {room.images.length > 1 && (
-              <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-lg text-sm">
-                +{room.images.length - 1} más
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rooms.map((room) => (
+            <div
+              key={room.id}
+              className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <div className="relative h-48 bg-gray-100">
+                {room.images.length > 0 ? (
+                  <div className="relative h-full">
+                    <img
+                      src={room.images[0].image_url}
+                      alt={room.room_number}
+                      className="w-full h-full object-cover"
+                      onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
+                    />
+                    {room.images.length > 1 && (
+                      <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-lg text-sm">
+                        +{room.images.length - 1} {t.moreImages}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <span className="text-gray-400 text-4xl">🛏️</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <span className="text-gray-400 text-4xl">🛏️</span>
-          </div>
-        )}
-      </div>
 
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="text-xl font-bold text-gray-800 line-clamp-2">
-            {room.room_number}
-          </h3>
-          <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-semibold ml-2 whitespace-nowrap">
-            ${parseFloat(room.price_per_night).toFixed(2)}
-          </span>
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-xl font-bold text-gray-800 line-clamp-2">
+                    {room.room_number}
+                  </h3>
+                  <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-semibold ml-2 whitespace-nowrap">
+                    ${parseFloat(room.price_per_night).toFixed(2)}
+                  </span>
+                </div>
+
+                <p className="text-gray-600 text-sm mb-2">
+                  <span className="font-medium">{t.type}:</span>{" "}
+                  {t[room.room_type.toLowerCase() as keyof typeof t] || room.room_type}
+                </p>
+                <p className="text-gray-600 text-sm mb-2">
+                  <span className="font-medium">{t.capacity}:</span> {room.capacity} {t.people}
+                </p>
+                <p className="text-gray-600 text-sm mb-2">
+                  <span className="font-medium">{t.numberOfBeds}:</span> {room.number_of_beds} {t.beds}
+                </p>
+                <p className="text-gray-600 text-sm mb-2">
+                  <span className="font-medium">{t.amenities}:</span>{" "}
+                  {[
+                    room.has_wifi && t.wifi,
+                    room.has_air_conditioning && t.airConditioning,
+                    room.has_tv && t.tv,
+                    room.has_minibar && t.minibar,
+                    room.has_balcony && t.balcony,
+                  ].filter(Boolean).join(", ") || t.none}
+                </p>
+                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <span className="font-medium">{t.description}:</span>{" "}
+                  {room.description || t.noDescription}
+                </p>
+
+                {room.images.length > 1 && (
+                  <div className="flex gap-2 mb-4 overflow-x-auto">
+                    {room.images.slice(1, 4).map((image, index) => (
+                      <img
+                        key={index}
+                        src={image.image_url}
+                        alt={`${room.room_number} ${index + 2}`}
+                        className="w-12 h-12 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                        onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditRoom(room)}
+                    className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 font-medium"
+                    disabled={loading}
+                  >
+                    ✏️ {t.edit}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteRoom(room.id)}
+                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium"
+                    disabled={loading}
+                  >
+                    🗑️ {t.delete}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-
-        <p className="text-gray-600 text-sm mb-2">
-          <span className="font-medium">Tipo:</span> {room.room_type}
-        </p>
-        <p className="text-gray-600 text-sm mb-2">
-          <span className="font-medium">Capacidad:</span> {room.capacity} personas
-        </p>
-        <p className="text-gray-600 text-sm mb-2">
-          <span className="font-medium">Camas:</span> {room.number_of_beds}
-        </p>
-        <p className="text-gray-600 text-sm mb-2">
-          <span className="font-medium">Amenidades:</span>{" "}
-          {room.has_wifi && "WiFi, "}
-          {room.has_air_conditioning && "A/C, "}
-          {room.has_tv && "TV, "}
-          {room.has_minibar && "Minibar, "}
-          {room.has_balcony && "Balcón"}
-          {!room.has_wifi &&
-            !room.has_air_conditioning &&
-            !room.has_tv &&
-            !room.has_minibar &&
-            !room.has_balcony &&
-            "Ninguna"}
-        </p>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-          <span className="font-medium">Descripción:</span>{" "}
-          {room.description || "Sin descripción"}
-        </p>
-
-        {room.images.length > 1 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto">
-            {room.images.slice(1, 4).map((image, index) => (
-              <img
-                key={index}
-                src={image.image_url}
-                alt={`${room.room_number} ${index + 2}`}
-                className="w-12 h-12 object-cover rounded-lg border border-gray-200 flex-shrink-0"
-                onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleEditRoom(room)}
-            className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 font-medium"
-            disabled={loading}
-          >
-            ✏️ Editar
-          </button>
-          <button
-            onClick={() => handleDeleteRoom(room.id)}
-            className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium"
-            disabled={loading}
-          >
-            🗑️ Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-
 
         {rooms.length === 0 && !loading && (
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">🛏️</span>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay habitaciones registradas</h3>
-            <p className="text-gray-500 mb-6">¡Comienza agregando tu primera habitación!</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">{t.noRoomsRegistered}</h3>
+            <p className="text-gray-500 mb-6">{t.startAddingRoom}</p>
             <button
               onClick={() => setIsModalOpen(true)}
               className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200"
             >
-              ✨ Agregar Primera Habitación
+              ✨ {t.addFirstRoom}
             </button>
           </div>
         )}
@@ -430,7 +431,7 @@ setNewRoomType("Estándar");
               <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
                 <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-bold text-gray-800">
-                    {editingRoomId ? "✏️ Editar Habitación" : "✨ Agregar Nueva Habitación"}
+                    {editingRoomId ? `✏️ ${t.editRoom}` : `✨ ${t.addNewRoom}`}
                   </h3>
                   <button
                     onClick={handleCloseModal}
@@ -447,37 +448,37 @@ setNewRoomType("Estándar");
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        🏷️ Número de la habitación
+                        🏷️ {t.roomNumber}
                       </label>
                       <input
                         value={newRoomNumber}
                         onChange={(e) => setNewRoomNumber(e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
-                        placeholder="Ej: 101"
+                        placeholder={t.placeholderRoomNumber}
                         disabled={loading}
                       />
                     </div>
 
-<div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2">
-    🛋️ Tipo
-  </label>
-  <select
-    value={newRoomType}
-    onChange={(e) => setNewRoomType(e.target.value)}
-    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
-    disabled={loading}
-  >
-    <option value="Estándar">Estándar</option>
-    <option value="Suite">Suite</option>
-    <option value="Deluxe">Deluxe</option>
-    <option value="Familiar">Familiar</option>
-  </select>
-</div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        🛋️ {t.type}
+                      </label>
+                      <select
+                        value={newRoomType}
+                        onChange={(e) => setNewRoomType(e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
+                        disabled={loading}
+                      >
+                        <option value="Estándar">{t.standard}</option>
+                        <option value="Suite">{t.suite}</option>
+                        <option value="Deluxe">{t.deluxe}</option>
+                        <option value="Familiar">{t.family}</option>
+                      </select>
+                    </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        👥 Capacidad
+                        👥 {t.capacity}
                       </label>
                       <input
                         type="number"
@@ -485,14 +486,14 @@ setNewRoomType("Estándar");
                         onChange={(e) => setNewRoomCapacity(Number(e.target.value) || 0)}
                         className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                         min="1"
-                        placeholder="Ej: 2"
+                        placeholder={t.placeholderCapacity}
                         disabled={loading}
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        🛏️ Número de Camas
+                        🛏️ {t.numberOfBeds}
                       </label>
                       <input
                         type="number"
@@ -500,14 +501,14 @@ setNewRoomType("Estándar");
                         onChange={(e) => setNewRoomBeds(Number(e.target.value) || 0)}
                         className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                         min="1"
-                        placeholder="Ej: 1"
+                        placeholder={t.placeholderBeds}
                         disabled={loading}
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        💰 Precio por Noche
+                        💰 {t.pricePerNight}
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-3 text-gray-500">$</span>
@@ -518,7 +519,7 @@ setNewRoomType("Estándar");
                           className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                           min="0"
                           step="0.01"
-                          placeholder="100.00"
+                          placeholder={t.placeholderPrice}
                           disabled={loading}
                         />
                       </div>
@@ -526,13 +527,13 @@ setNewRoomType("Estándar");
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        📝 Descripción
+                        📝 {t.description}
                       </label>
                       <textarea
                         value={newRoomDescription}
                         onChange={(e) => setNewRoomDescription(e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
-                        placeholder="Ej: Habitación espaciosa con vista al mar"
+                        placeholder={t.placeholderDescription}
                         disabled={loading}
                         rows={4}
                       />
@@ -542,76 +543,75 @@ setNewRoomType("Estándar");
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        ⚙️ Amenidades
+                        ⚙️ {t.amenities}
                       </label>
-<div className="flex space-x-6">
-  <div className="flex items-center">
-    <input
-      type="checkbox"
-      checked={newRoomWifi}
-      onChange={(e) => setNewRoomWifi(e.target.checked)}
-      className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
-      disabled={loading}
-    />
-    <label className="ml-2 text-sm text-gray-600">WiFi</label>
-  </div>
-  <div className="flex items-center">
-    <input
-      type="checkbox"
-      checked={newRoomAirConditioning}
-      onChange={(e) => setNewRoomAirConditioning(e.target.checked)}
-      className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
-      disabled={loading}
-    />
-    <label className="ml-2 text-sm text-gray-600">Aire Acondicionado</label>
-  </div>
-  <div className="flex items-center">
-    <input
-      type="checkbox"
-      checked={newRoomTv}
-      onChange={(e) => setNewRoomTv(e.target.checked)}
-      className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
-      disabled={loading}
-    />
-    <label className="ml-2 text-sm text-gray-600">TV</label>
-  </div>
-  <div className="flex items-center">
-    <input
-      type="checkbox"
-      checked={newRoomMinibar}
-      onChange={(e) => setNewRoomMinibar(e.target.checked)}
-      className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
-      disabled={loading}
-    />
-    <label className="ml-2 text-sm text-gray-600">Minibar</label>
-  </div>
-  <div className="flex items-center">
-    <input
-      type="checkbox"
-      checked={newRoomBalcony}
-      onChange={(e) => setNewRoomBalcony(e.target.checked)}
-      className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
-      disabled={loading}
-    />
-    <label className="ml-2 text-sm text-gray-600">Balcón</label>
-  </div>
-</div>
-
+                      <div className="flex space-x-6">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={newRoomWifi}
+                            onChange={(e) => setNewRoomWifi(e.target.checked)}
+                            className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
+                            disabled={loading}
+                          />
+                          <label className="ml-2 text-sm text-gray-600">{t.wifi}</label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={newRoomAirConditioning}
+                            onChange={(e) => setNewRoomAirConditioning(e.target.checked)}
+                            className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
+                            disabled={loading}
+                          />
+                          <label className="ml-2 text-sm text-gray-600">{t.airConditioning}</label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={newRoomTv}
+                            onChange={(e) => setNewRoomTv(e.target.checked)}
+                            className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
+                            disabled={loading}
+                          />
+                          <label className="ml-2 text-sm text-gray-600">{t.tv}</label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={newRoomMinibar}
+                            onChange={(e) => setNewRoomMinibar(e.target.checked)}
+                            className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
+                            disabled={loading}
+                          />
+                          <label className="ml-2 text-sm text-gray-600">{t.minibar}</label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={newRoomBalcony}
+                            onChange={(e) => setNewRoomBalcony(e.target.checked)}
+                            className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded disabled:bg-gray-100"
+                            disabled={loading}
+                          />
+                          <label className="ml-2 text-sm text-gray-600">{t.balcony}</label>
+                        </div>
+                      </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        📷 Gestión de Imágenes
+                        📷 {t.imageManagement}
                       </label>
                       <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                        <h4 className="text-sm font-medium text-gray-600 mb-3">Agregar desde URL</h4>
+                        <h4 className="text-sm font-medium text-gray-600 mb-3">{t.addFromUrl}</h4>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             value={newImageUrl}
                             onChange={(e) => setNewImageUrl(e.target.value)}
                             className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100"
-                            placeholder="https://ejemplo.com/imagen.jpg"
+                            placeholder={t.placeholderImageUrl}
                             disabled={loading}
                           />
                           <button
@@ -625,7 +625,7 @@ setNewRoomType("Estándar");
                       </div>
 
                       <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                        <h4 className="text-sm font-medium text-gray-600 mb-3">Subir desde dispositivo</h4>
+                        <h4 className="text-sm font-medium text-gray-600 mb-3">{t.uploadFromDevice}</h4>
                         <input
                           type="file"
                           accept="image/*"
@@ -638,7 +638,7 @@ setNewRoomType("Estándar");
 
                       <div>
                         <h4 className="text-sm font-medium text-gray-600 mb-3">
-                          Imágenes agregadas ({newRoomImages.length})
+                          {t.addedImages} ({newRoomImages.length})
                         </h4>
                         <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto">
                           {newRoomImages.map((image, index) => (
@@ -649,6 +649,7 @@ setNewRoomType("Estándar");
                                 className="w-full h-24 object-cover rounded-lg border border-gray-200"
                                 onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
                               />
+                           
                               <button
                                 onClick={() => handleRemoveImage(index)}
                                 className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition opacity-0 group-hover:opacity-100 text-xs"
@@ -661,7 +662,7 @@ setNewRoomType("Estándar");
                           {newRoomImages.length === 0 && (
                             <div className="col-span-2 text-center py-8 text-gray-400">
                               <span className="text-4xl mb-2 block">📷</span>
-                              <p className="text-sm">No hay imágenes agregadas</p>
+                              <p className="text-sm">{t.noImagesAdded}</p>
                             </div>
                           )}
                         </div>
@@ -679,10 +680,10 @@ setNewRoomType("Estándar");
                     {loading ? (
                       <div className="flex items-center justify-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        Procesando...
+                        {t.processing}
                       </div>
                     ) : (
-                      <>{editingRoomId ? "💾 Guardar Cambios" : "✨ Agregar Habitación"}</>
+                      <>{editingRoomId ? `💾 ${t.saveChanges}` : `✨ ${t.addRoom}`}</>
                     )}
                   </button>
                   <button
@@ -690,7 +691,7 @@ setNewRoomType("Estándar");
                     className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50"
                     disabled={loading}
                   >
-                    ❌ Cancelar
+                    ❌ {t.cancel}
                   </button>
                 </div>
               </div>
@@ -698,7 +699,6 @@ setNewRoomType("Estándar");
           </div>
         )}
       </div>
-      
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState, useEffect, MouseEvent } from "react";
+import { translations } from "../translations/dish_management"; // New import
 
 interface Dish {
   id: string;
@@ -17,12 +18,16 @@ interface Category {
 }
 
 export default function DishManagement() {
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
   const [dishes, setDishes] = useState<Dish[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]); // State for categories
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newDishName, setNewDishName] = useState("");
   const [newDishDescription, setNewDishDescription] = useState("");
   const [newDishPrice, setNewDishPrice] = useState<number | "">(0);
-  const [newDishCategoryId, setNewDishCategoryId] = useState<number | "">(""); // State for category_id
+  const [newDishCategoryId, setNewDishCategoryId] = useState<number | "">("");
   const [newDishImages, setNewDishImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [editingDishId, setEditingDishId] = useState<string | null>(null);
@@ -32,29 +37,29 @@ export default function DishManagement() {
 
   useEffect(() => {
     fetchDishes();
-    fetchCategories(); // Fetch categories on mount
+    fetchCategories();
   }, []);
 
   const fetchDishes = async () => {
     setLoading(true);
     try {
       const response = await fetch("/api/dishes");
-      if (!response.ok) throw new Error(`Error al cargar los platos: ${response.status}`);
+      if (!response.ok) throw new Error(`${t.errorLoadingDishes}: ${response.status}`);
       const { success, message, data } = await response.json();
-      if (!success) throw new Error(message || "Error al obtener los platos");
+      if (!success) throw new Error(message || t.errorLoadingDishes);
 
       const transformedDishes: Dish[] = data.map((item: any) => ({
         id: item.id.toString(),
         name: item.name,
         description: item.description || "",
         price: item.price,
-        category_id: item.category_id, // Include category_id
+        category_id: item.category_id,
         images: item.images.map((img: any) => img.image_url),
       }));
 
       setDishes(transformedDishes);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -64,16 +69,16 @@ export default function DishManagement() {
     setLoading(true);
     try {
       const response = await fetch("/api/categories");
-      if (!response.ok) throw new Error(`Error al cargar las categorías: ${response.status}`);
+      if (!response.ok) throw new Error(`${t.errorLoadingCategories}: ${response.status}`);
       const { success, message, data } = await response.json();
-      if (!success) throw new Error(message || "Error al obtener las categorías");
+      if (!success) throw new Error(message || t.errorLoadingCategories);
 
       setCategories(data.map((item: any) => ({
         id: item.id,
         name: item.name,
       })));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -81,19 +86,19 @@ export default function DishManagement() {
 
   const handleAddDish = async () => {
     if (newDishName.trim() === "") {
-      alert("El nombre del plato no puede estar vacío.");
+      alert(t.dishNameEmpty);
       return;
     }
     if (!newDishPrice || newDishPrice <= 0) {
-      alert("Por favor, ingrese un precio válido mayor a 0.");
+      alert(t.invalidPrice);
       return;
     }
     if (!newDishCategoryId) {
-      alert("Por favor, seleccione una categoría.");
+      alert(t.categoryEmpty);
       return;
     }
     if (newDishImages.length === 0) {
-      alert("Debe proporcionar al menos una imagen para el plato.");
+      alert(t.noImages);
       return;
     }
 
@@ -108,7 +113,7 @@ export default function DishManagement() {
         name: newDishName,
         description: newDishDescription,
         price: Number(newDishPrice),
-        category_id: Number(newDishCategoryId), // Use category_id instead of category
+        category_id: Number(newDishCategoryId),
         images: imagesPayload,
       };
       console.log("Payload to send:", payload);
@@ -120,7 +125,7 @@ export default function DishManagement() {
         });
         if (!response.ok) {
           const { message } = await response.json();
-          throw new Error(message || "Error al actualizar el plato");
+          throw new Error(message || t.errorUpdatingDish);
         }
       } else {
         const response = await fetch("/api/dishes", {
@@ -130,7 +135,7 @@ export default function DishManagement() {
         });
         if (!response.ok) {
           const { message } = await response.json();
-          throw new Error(message || "Error al agregar el plato");
+          throw new Error(message || t.errorAddingDish);
         }
       }
       await fetchDishes();
@@ -138,12 +143,12 @@ export default function DishManagement() {
       setNewDishName("");
       setNewDishDescription("");
       setNewDishPrice(0);
-      setNewDishCategoryId(""); // Reset category
+      setNewDishCategoryId("");
       setNewDishImages([]);
       setNewImageUrl("");
       setIsModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -153,7 +158,7 @@ export default function DishManagement() {
     setNewDishName(dish.name);
     setNewDishDescription(dish.description);
     setNewDishPrice(dish.price);
-    setNewDishCategoryId(dish.category_id); // Set category_id
+    setNewDishCategoryId(dish.category_id);
     setNewDishImages(dish.images);
     setNewImageUrl("");
     setEditingDishId(dish.id);
@@ -161,16 +166,16 @@ export default function DishManagement() {
   };
 
   const handleDeleteDish = async (id: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este plato?")) {
+    if (confirm(t.deleteConfirm)) {
       setLoading(true);
       try {
         const response = await fetch(`/api/dishes/${id}`, {
           method: "DELETE",
         });
-        if (!response.ok) throw new Error("Error al eliminar el plato");
+        if (!response.ok) throw new Error(t.errorDeletingDish);
         await fetchDishes();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t.errorUnknown);
       } finally {
         setLoading(false);
       }
@@ -183,7 +188,7 @@ export default function DishManagement() {
     setNewDishName("");
     setNewDishDescription("");
     setNewDishPrice(0);
-    setNewDishCategoryId(""); // Reset category
+    setNewDishCategoryId("");
     setNewDishImages([]);
     setNewImageUrl("");
   };
@@ -230,16 +235,16 @@ export default function DishManagement() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">
-                🍽️ Gestión de Platos
+                🍽️ {t.dishManagement}
               </h1>
-              <p className="text-gray-600 mt-2">Administra tu menú de forma fácil y visual</p>
+              <p className="text-gray-600 mt-2">{t.manageDishes}</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
               className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
               disabled={loading}
             >
-              ✨ Agregar Plato
+              ✨ {t.addDish}
             </button>
           </div>
 
@@ -250,7 +255,7 @@ export default function DishManagement() {
                   <span className="text-yellow-600 text-xl">🍕</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Total Platos</p>
+                  <p className="text-gray-600 text-sm">{t.totalDishes}</p>
                   <p className="text-2xl font-bold text-gray-800">{dishes.length}</p>
                 </div>
               </div>
@@ -260,34 +265,20 @@ export default function DishManagement() {
                 <div className="bg-green-100 p-3 rounded-lg">
                   <span className="text-green-600 text-xl">💰</span>
                 </div>
-     
-
-
-
-
-     
-<div className="ml-4">
-  <p className="text-gray-600 text-sm">Precio Promedio</p>
-  <p className="text-2xl font-bold text-gray-800">
-    {dishes.length > 0
-      ? `$${(
-          dishes.reduce((acc, dish) => {
-            // Intentamos convertir a número siempre
-            const priceNum = Number(dish.price);
-            console.log('Precio actual:', dish.price, '=> convertido a:', priceNum);
-            // Si no es un número válido, sumamos 0 para no romper
-            return acc + (isNaN(priceNum) ? 0 : priceNum);
-          }, 0) / dishes.length
-        ).toFixed(2)}`
-      : '$0.00'}
-  </p>
-</div>
-
-
-
-
-
-
+                <div className="ml-4">
+                  <p className="text-gray-600 text-sm">{t.averagePrice}</p>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {dishes.length > 0
+                      ? `$${(
+                          dishes.reduce((acc, dish) => {
+                            const priceNum = Number(dish.price);
+                            console.log('Precio actual:', dish.price, '=> convertido a:', priceNum);
+                            return acc + (isNaN(priceNum) ? 0 : priceNum);
+                          }, 0) / dishes.length
+                        ).toFixed(2)}`
+                      : '$0.00'}
+                  </p>
+                </div>
               </div>
             </div>
             <div className="bg-white rounded-xl p-4 shadow-md border border-blue-100">
@@ -296,7 +287,7 @@ export default function DishManagement() {
                   <span className="text-blue-600 text-xl">📷</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Total Imágenes</p>
+                  <p className="text-gray-600 text-sm">{t.totalImages}</p>
                   <p className="text-2xl font-bold text-gray-800">
                     {dishes.reduce((acc, dish) => acc + dish.images.length, 0)}
                   </p>
@@ -315,7 +306,7 @@ export default function DishManagement() {
         {loading && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl shadow-sm flex items-center">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-3"></div>
-            Cargando...
+            {t.loading}
           </div>
         )}
 
@@ -333,7 +324,7 @@ export default function DishManagement() {
                     />
                     {dish.images.length > 1 && (
                       <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-lg text-sm">
-                        +{dish.images.length - 1} más
+                        +{dish.images.length - 1} {t.moreImages}
                       </div>
                     )}
                   </div>
@@ -353,7 +344,7 @@ export default function DishManagement() {
                 </div>
                 
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {dish.description || "Sin descripción"}
+                  {dish.description || t.noDescription}
                 </p>
 
                 {dish.images.length > 1 && (
@@ -376,14 +367,14 @@ export default function DishManagement() {
                     className="flex-1 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition disabled:opacity-50 font-medium"
                     disabled={loading}
                   >
-                    ✏️ Editar
+                    ✏️ {t.edit}
                   </button>
                   <button
                     onClick={() => handleDeleteDish(dish.id)}
                     className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium"
                     disabled={loading}
                   >
-                    🗑️ Eliminar
+                    🗑️ {t.delete}
                   </button>
                 </div>
               </div>
@@ -394,13 +385,13 @@ export default function DishManagement() {
         {dishes.length === 0 && !loading && (
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">🍽️</span>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay platos registrados</h3>
-            <p className="text-gray-500 mb-6">¡Comienza agregando tu primer plato al menú!</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">{t.noDishesRegistered}</h3>
+            <p className="text-gray-500 mb-6">{t.startAddingDish}</p>
             <button
               onClick={() => setIsModalOpen(true)}
               className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200"
             >
-              ✨ Agregar Primer Plato
+              ✨ {t.addFirstDish}
             </button>
           </div>
         )}
@@ -413,9 +404,9 @@ export default function DishManagement() {
         >
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between нужна ли эта часть? items-center">
                 <h3 className="text-2xl font-bold text-gray-800">
-                  {editingDishId ? "✏️ Editar Plato" : "✨ Agregar Nuevo Plato"}
+                  {editingDishId ? `✏️ ${t.editDish}` : `✨ ${t.addNewDish}`}
                 </h3>
                 <button
                   onClick={handleCloseModal}
@@ -432,26 +423,26 @@ export default function DishManagement() {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      🏷️ Nombre del plato
+                      🏷️ {t.dishName}
                     </label>
                     <input
                       value={newDishName}
                       onChange={(e) => setNewDishName(e.target.value)}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
-                      placeholder="Ej: Pizza Margherita"
+                      placeholder={t.placeholderDishName}
                       disabled={loading}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📝 Descripción
+                      📝 {t.description}
                     </label>
                     <textarea
                       value={newDishDescription}
                       onChange={(e) => setNewDishDescription(e.target.value)}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
-                      placeholder="Ej: Pizza con tomate, mozzarella y albahaca fresca"
+                      placeholder={t.placeholderDescription}
                       rows={4}
                       disabled={loading}
                     />
@@ -459,7 +450,7 @@ export default function DishManagement() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📋 Categoría
+                      📋 {t.category}
                     </label>
                     <select
                       value={newDishCategoryId}
@@ -467,7 +458,7 @@ export default function DishManagement() {
                       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                       disabled={loading}
                     >
-                      <option value="">Seleccione una categoría</option>
+                      <option value="">{t.selectCategory}</option>
                       {categories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
@@ -478,7 +469,7 @@ export default function DishManagement() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      💰 Precio
+                      💰 {t.price}
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-3 text-gray-500">$</span>
@@ -489,7 +480,7 @@ export default function DishManagement() {
                         className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                         min="0"
                         step="0.01"
-                        placeholder="12.99"
+                        placeholder={t.placeholderPrice}
                         disabled={loading}
                       />
                     </div>
@@ -499,18 +490,18 @@ export default function DishManagement() {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📷 Gestión de Imágenes
+                      📷 {t.imageManagement}
                     </label>
 
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">Agregar desde URL</h4>
+                      <h4 className="text-sm font-medium text-gray-600 mb-3">{t.addFromUrl}</h4>
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={newImageUrl}
                           onChange={(e) => setNewImageUrl(e.target.value)}
                           className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100"
-                          placeholder="https://ejemplo.com/imagen.jpg"
+                          placeholder={t.placeholderImageUrl}
                           disabled={loading}
                         />
                         <button
@@ -524,7 +515,7 @@ export default function DishManagement() {
                     </div>
 
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">Subir desde dispositivo</h4>
+                      <h4 className="text-sm font-medium text-gray-600 mb-3">{t.uploadFromDevice}</h4>
                       <input
                         type="file"
                         accept="image/*"
@@ -537,14 +528,14 @@ export default function DishManagement() {
 
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 mb-3">
-                        Imágenes agregadas ({newDishImages.length})
+                        {t.addedImages} ({newDishImages.length})
                       </h4>
                       <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto">
                         {newDishImages.map((image, index) => (
                           <div key={index} className="relative group">
                             <img
                               src={image}
-                              alt={`Imagen ${index + 1}`}
+                              alt={`${t.dishName} ${index + 1}`}
                               className="w-full h-24 object-cover rounded-lg border border-gray-200"
                               onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
                             />
@@ -560,7 +551,7 @@ export default function DishManagement() {
                         {newDishImages.length === 0 && (
                           <div className="col-span-2 text-center py-8 text-gray-400">
                             <span className="text-4xl mb-2 block">📷</span>
-                            <p className="text-sm">No hay imágenes agregadas</p>
+                            <p className="text-sm">{t.noImagesAdded}</p>
                           </div>
                         )}
                       </div>
@@ -578,10 +569,10 @@ export default function DishManagement() {
                   {loading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Procesando...
+                      {t.processing}
                     </div>
                   ) : (
-                    <>{editingDishId ? "💾 Guardar Cambios" : "✨ Agregar Plato"}</>
+                    <>{editingDishId ? `💾 ${t.saveChanges}` : `✨ ${t.addDish}`}</>
                   )}
                 </button>
                 <button
@@ -589,7 +580,7 @@ export default function DishManagement() {
                   className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50"
                   disabled={loading}
                 >
-                  ❌ Cancelar
+                  ❌ {t.cancel}
                 </button>
               </div>
             </div>

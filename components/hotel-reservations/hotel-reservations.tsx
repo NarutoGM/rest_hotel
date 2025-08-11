@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/button";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import ReservationTooltip from "../../components/hotel-reservations/ReservationTooltip";
 import ReservationModal from "../../components/hotel-reservations/ReservationModal";
+import { translations } from "../translations/reservation_hotel_core"; // New import
 
 interface Room {
   id: number;
@@ -80,6 +81,10 @@ const DAY_WIDTH_PX = 120;
 export default function HotelReservations({
   initialStartDate = new Date(),
 }: HotelReservationsProps = {}) {
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
   // Estado interno para manejar las reservas
   const [reservations, setReservations] = useState<HotelReservation[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -115,7 +120,7 @@ export default function HotelReservations({
       setLoading(true);
       try {
         const response = await fetch("/api/room");
-        if (!response.ok) throw new Error("Error al cargar las habitaciones");
+        if (!response.ok) throw new Error(t.errorLoadingRooms);
         const data = await response.json();
         console.log("Rooms data:", data);
         // Mapear los datos de la API al formato del componente
@@ -126,7 +131,7 @@ export default function HotelReservations({
         }));
         setRooms(formattedRooms);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t.errorUnknown);
       } finally {
         setLoading(false);
       }
@@ -140,7 +145,7 @@ export default function HotelReservations({
     setLoading(true);
     try {
       const response = await fetch("/api/reservations-hotel");
-      if (!response.ok) throw new Error("Error al cargar las reservas");
+      if (!response.ok) throw new Error(t.errorLoadingReservations);
       const data = await response.json();
       console.log("Reservations data:", data);
       
@@ -153,7 +158,7 @@ export default function HotelReservations({
       
       setReservations(formattedData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -186,7 +191,7 @@ export default function HotelReservations({
     setLoading(true);
     try {
       const room = rooms.find((r) => r.id === newReservation.roomId);
-      if (!room) throw new Error("Habitación no encontrada");
+      if (!room) throw new Error(t.errorSavingReservation);
 
       // Calcular el número de noches
       const diffTime = Math.abs(newReservation.checkOut.getTime() - newReservation.checkIn.getTime());
@@ -211,7 +216,7 @@ export default function HotelReservations({
         body: JSON.stringify(reservationToSave),
       });
 
-      if (!response.ok) throw new Error("Error al guardar la reserva");
+      if (!response.ok) throw new Error(t.errorSavingReservation);
 
       const savedReservation = await response.json();
       
@@ -240,7 +245,7 @@ export default function HotelReservations({
       handleCloseModal();
       fetchReservations(); // Refrescar reservas después de guardar
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -272,10 +277,10 @@ export default function HotelReservations({
       const response = await fetch(`/api/reservations-hotel/${reservationId}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new Error("Error al eliminar la reserva");
+      if (!response.ok) throw new Error(t.errorDeletingReservation);
       setReservations(reservations.filter((res) => res.id !== reservationId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -356,14 +361,14 @@ export default function HotelReservations({
   };
 
   const formatDisplayDate = (date: Date) => {
-    return date.toLocaleDateString('es-ES', {
+    return date.toLocaleDateString(lang, {
       day: '2-digit',
       month: '2-digit'
     });
   };
 
   const getDayName = (date: Date) => {
-    return date.toLocaleDateString('es-ES', { weekday: 'short' });
+    return date.toLocaleDateString(lang, { weekday: 'short' });
   };
 
   return (
@@ -375,7 +380,7 @@ export default function HotelReservations({
       )}
       {loading && (
         <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded-lg shadow text-sm">
-          Cargando...
+          {t.loading}
         </div>
       )}
 
@@ -383,23 +388,23 @@ export default function HotelReservations({
       <div className="mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full lg:w-auto">
           <div className="flex items-center gap-2 ">
-                    <Button
-          onClick={handleNewReservationClick}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-4 sm:w-auto justify-center"
-          disabled={loading || rooms.length === 0}
-        >
-          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-          <span className="hidden sm:inline">Nueva Reserva</span>
-          <span className="sm:hidden">Nueva</span>
-        </Button>
+            <Button
+              onClick={handleNewReservationClick}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-4 sm:w-auto justify-center"
+              disabled={loading || rooms.length === 0}
+            >
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">{t.newReservation}</span>
+              <span className="sm:hidden">{t.newReservationShort}</span>
+            </Button>
             <Button
               onClick={handlePreviousWeek}
               className="bg-gray-200 text-zinc-800 hover:bg-gray-300 text-xs sm:text-sm px-2 sm:px-4"
               disabled={loading}
             >
               <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Semana Anterior</span>
-              <span className="sm:hidden">Ant.</span>
+              <span className="hidden sm:inline">{t.previousWeek}</span>
+              <span className="sm:hidden">{t.previousWeekShort}</span>
             </Button>
             <input
               type="date"
@@ -413,24 +418,22 @@ export default function HotelReservations({
               className="bg-gray-200 text-zinc-800 hover:bg-gray-300 text-xs sm:text-sm px-2 sm:px-4"
               disabled={loading}
             >
-              <span className="hidden sm:inline">Próxima Semana</span>
-              <span className="sm:hidden">Sig.</span>
+              <span className="hidden sm:inline">{t.nextWeek}</span>
+              <span className="sm:hidden">{t.nextWeekShort}</span>
               <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
-        
         </div>
-
       </div>
 
       {/* Tabla con scroll horizontal */}
       <div className="border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <div className="min-w-[1200px]"> {/* Ancho mínimo para mantener funcionalidad */}
+          <div className="min-w-[1200px]">
             {/* Header con días */}
             <div className="bg-gray-100 border-b grid" style={{ gridTemplateColumns: '200px 1fr' }}>
               <div className="p-2 sm:p-3 font-semibold border-r bg-gray-100 flex items-center justify-center text-xs sm:text-sm">
-                Habitación
+                {t.room}
               </div>
               <div className="grid" style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
                 {days.map((day, index) => (
@@ -452,20 +455,20 @@ export default function HotelReservations({
                   <div className="p-2 sm:p-3 border-r bg-gray-50 flex flex-col justify-center">
                     <div className="font-medium text-xs sm:text-sm">{room.room_number}</div>
                     <div className="text-xs text-zinc-600">
-                      {room.room_type} • {room.capacity} {room.capacity === 1 ? 'huésped' : 'huéspedes'} • {room.number_of_beds} {room.number_of_beds === 1 ? 'cama' : 'camas'}
+                      {room.room_type} • {room.capacity} {room.capacity === 1 ? t.guest : t.guests} • {room.number_of_beds} {room.number_of_beds === 1 ? t.bed : t.beds}
                     </div>
                     <div className="text-xs text-green-600 font-medium">
-                      ${room.price_per_night}/noche
+                      ${room.price_per_night}{t.perNight}
                     </div>
                     <div className="text-xs text-zinc-600 hidden sm:block">
-                      {room.has_wifi && 'WiFi • '}
-                      {room.has_air_conditioning && 'A/C • '}
-                      {room.has_tv && 'TV • '}
-                      {room.has_minibar && 'Minibar • '}
-                      {room.has_balcony && 'Balcón'}
+                      {room.has_wifi && `${t.wifi} • `}
+                      {room.has_air_conditioning && `${t.airConditioning} • `}
+                      {room.has_tv && `${t.tv} • `}
+                      {room.has_minibar && `${t.minibar} • `}
+                      {room.has_balcony && t.balcony}
                     </div>
                     <div className={`text-xs ${room.status ? 'text-green-500' : 'text-red-500'}`}>
-                      {room.status ? 'Disponible' : 'Fuera de servicio'}
+                      {room.status ? t.available : t.outOfService}
                     </div>
                   </div>
 

@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState, useEffect, MouseEvent } from "react";
+import { translations } from "../components/translations/table_management"; // New import
 
 interface Table {
   id: string;
@@ -11,6 +12,10 @@ interface Table {
 }
 
 export default function TableManagement() {
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
   const [tables, setTables] = useState<Table[]>([]);
   const [newTableNumber, setNewTableNumber] = useState("");
   const [newTableCapacity, setNewTableCapacity] = useState<number | "">(2);
@@ -30,11 +35,11 @@ export default function TableManagement() {
     setLoading(true);
     try {
       const response = await fetch("/api/tables");
-      if (!response.ok) throw new Error("Error al cargar las mesas");
+      if (!response.ok) throw new Error(t.errorLoadingTables);
       const data = await response.json();
       setTables(data.data || []); // Use data.data, default to empty array
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
       setTables([]); // Ensure tables is an array on error
     } finally {
       setLoading(false);
@@ -43,19 +48,19 @@ export default function TableManagement() {
 
   const handleAddTable = async () => {
     if (newTableNumber.trim() === "") {
-      alert("El número de la mesa no puede estar vacío.");
+      alert(t.tableNumberEmpty);
       return;
     }
     if (!newTableCapacity || newTableCapacity <= 0) {
-      alert("Por favor, ingrese una capacidad válida mayor a 0.");
+      alert(t.invalidCapacity);
       return;
     }
     if (newTableLocation.trim() === "") {
-      alert("La ubicación de la mesa no puede estar vacía.");
+      alert(t.locationEmpty);
       return;
     }
     if (newTableStatus.trim() === "") {
-      alert("El estado de la mesa no puede estar vacío.");
+      alert(t.statusEmpty);
       return;
     }
 
@@ -74,7 +79,7 @@ export default function TableManagement() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error("Error al actualizar la mesa");
+        if (!response.ok) throw new Error(t.errorUpdatingTable);
         await fetchTables();
         setEditingTableId(null);
       } else {
@@ -83,7 +88,7 @@ export default function TableManagement() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error("Error al agregar la mesa");
+        if (!response.ok) throw new Error(t.errorAddingTable);
         await fetchTables();
       }
       setNewTableNumber("");
@@ -93,7 +98,7 @@ export default function TableManagement() {
       setNewTableStatus("available");
       setIsModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t.errorUnknown);
     } finally {
       setLoading(false);
     }
@@ -109,16 +114,16 @@ export default function TableManagement() {
   };
 
   const handleDeleteTable = async (id: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar esta mesa?")) {
+    if (confirm(t.deleteConfirm)) {
       setLoading(true);
       try {
         const response = await fetch(`/api/tables/${id}`, {
           method: "DELETE",
         });
-        if (!response.ok) throw new Error("Error al eliminar la mesa");
+        if (!response.ok) throw new Error(t.errorDeletingTable);
         await fetchTables();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t.errorUnknown);
       } finally {
         setLoading(false);
       }
@@ -148,16 +153,16 @@ export default function TableManagement() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">
-                🍽️ Gestión de Mesas
+                🍽️ {t.tableManagement}
               </h1>
-              <p className="text-gray-600 mt-2">Administra las mesas de tu establecimiento de forma fácil y visual</p>
+              <p className="text-gray-600 mt-2">{t.manageTables}</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
               className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
               disabled={loading}
             >
-              ✨ Agregar Mesa
+              ✨ {t.addTable}
             </button>
           </div>
 
@@ -168,7 +173,7 @@ export default function TableManagement() {
                   <span className="text-yellow-600 text-xl">🍽️</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Total Mesas</p>
+                  <p className="text-gray-600 text-sm">{t.totalTables}</p>
                   <p className="text-2xl font-bold text-gray-800">{tables.length}</p>
                 </div>
               </div>
@@ -179,7 +184,7 @@ export default function TableManagement() {
                   <span className="text-green-600 text-xl">👥</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Capacidad Promedio</p>
+                  <p className="text-gray-600 text-sm">{t.averageCapacity}</p>
                   <p className="text-2xl font-bold text-gray-800">
                     {tables.length > 0
                       ? (tables.reduce((acc, table) => acc + table.capacity, 0) / tables.length).toFixed(1)
@@ -194,7 +199,7 @@ export default function TableManagement() {
                   <span className="text-purple-600 text-xl">✅</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-gray-600 text-sm">Mesas Disponibles</p>
+                  <p className="text-gray-600 text-sm">{t.availableTables}</p>
                   <p className="text-2xl font-bold text-gray-800">
                     {tables.filter((table) => table.status).length}
                   </p>
@@ -213,7 +218,7 @@ export default function TableManagement() {
         {loading && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl shadow-sm flex items-center">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-600 mr-3"></div>
-            Cargando...
+            {t.loading}
           </div>
         )}
 
@@ -231,15 +236,17 @@ export default function TableManagement() {
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-xl font-bold text-gray-800 line-clamp-2">{table.table_number}</h3>
                   <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-semibold ml-2 whitespace-nowrap">
-                    {table.capacity} pers.
+                    {table.capacity} {t.people}
                   </span>
                 </div>
                 <p className="text-gray-600 text-sm mb-2">
-                  <span className="font-medium">Ubicación:</span> {table.location}
+                  <span className="font-medium">{t.location}:</span>{" "}
+                  {t[table.location.toLowerCase() as keyof typeof t] || table.location}
                 </p>
             
                 <p className="text-gray-600 text-sm mb-4">
-                  <span className="font-medium">Estado:</span> {table.status}
+                  <span className="font-medium">{t.status}:</span>{" "}
+                  {t[table.status.toLowerCase() as keyof typeof t] || table.status}
                 </p>
 
                 <div className="flex gap-2">
@@ -248,14 +255,14 @@ export default function TableManagement() {
                     className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 font-medium"
                     disabled={loading}
                   >
-                    ✏️ Editar
+                    ✏️ {t.edit}
                   </button>
                   <button
                     onClick={() => handleDeleteTable(table.id)}
                     className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium"
                     disabled={loading}
                   >
-                    🗑️ Eliminar
+                    🗑️ {t.delete}
                   </button>
                 </div>
               </div>
@@ -266,13 +273,13 @@ export default function TableManagement() {
         {tables.length === 0 && !loading && (
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">🍽️</span>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay mesas registradas</h3>
-            <p className="text-gray-500 mb-6">¡Comienza agregando tu primera mesa!</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">{t.noTablesRegistered}</h3>
+            <p className="text-gray-500 mb-6">{t.startAddingTable}</p>
             <button
               onClick={() => setIsModalOpen(true)}
               className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200"
             >
-              ✨ Agregar Primera Mesa
+              ✨ {t.addFirstTable}
             </button>
           </div>
         )}
@@ -286,7 +293,7 @@ export default function TableManagement() {
               <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
                 <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-bold text-gray-800">
-                    {editingTableId ? "✏️ Editar Mesa" : "✨ Agregar Nueva Mesa"}
+                    {editingTableId ? `✏️ ${t.editTable}` : `✨ ${t.addNewTable}`}
                   </h3>
                   <button
                     onClick={handleCloseModal}
@@ -301,20 +308,20 @@ export default function TableManagement() {
               <div className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    🏷️ Número de la mesa
+                    🏷️ {t.tableNumber}
                   </label>
                   <input
                     value={newTableNumber}
                     onChange={(e) => setNewTableNumber(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
-                    placeholder="Ej: 1"
+                    placeholder={t.placeholderTableNumber}
                     disabled={loading}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    👥 Capacidad
+                    👥 {t.capacity}
                   </label>
                   <input
                     type="number"
@@ -322,14 +329,14 @@ export default function TableManagement() {
                     onChange={(e) => setNewTableCapacity(Number(e.target.value) || 0)}
                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                     min="1"
-                    placeholder="Ej: 4"
+                    placeholder={t.placeholderCapacity}
                     disabled={loading}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    📍 Ubicación
+                    📍 {t.location}
                   </label>
                   <select
                     value={newTableLocation}
@@ -337,15 +344,15 @@ export default function TableManagement() {
                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                     disabled={loading}
                   >
-                    <option value="Garden">Jardín</option>
-                    <option value="Terrace">Terraza</option>
-                    <option value="Indoor">Interior</option>
-                    <option value="VIP">VIP</option>
+                    <option value="Garden">{t.garden}</option>
+                    <option value="Terrace">{t.terrace}</option>
+                    <option value="Indoor">{t.indoor}</option>
+                    <option value="VIP">{t.vip}</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    🔄 Estado
+                    🔄 {t.status}
                   </label>
                   <select
                     value={newTableStatus}
@@ -353,9 +360,9 @@ export default function TableManagement() {
                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100 transition"
                     disabled={loading}
                   >
-                    <option value="available">Disponible</option>
-                    <option value="maintenance">Mantenimiento</option>
-                    <option value="reserved">Reservada</option>
+                    <option value="available">{t.available}</option>
+                    <option value="maintenance">{t.maintenance}</option>
+                    <option value="reserved">{t.reserved}</option>
                   </select>
                 </div>
               </div>
@@ -369,10 +376,10 @@ export default function TableManagement() {
                   {loading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Procesando...
+                      {t.processing}
                     </div>
                   ) : (
-                    <>{editingTableId ? "💾 Guardar Cambios" : "✨ Agregar Mesa"}</>
+                    <>{editingTableId ? `💾 ${t.saveChanges}` : `✨ ${t.addTable}`}</>
                   )}
                 </button>
                 <button
@@ -380,7 +387,7 @@ export default function TableManagement() {
                   className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50"
                   disabled={loading}
                 >
-                  ❌ Cancelar
+                  ❌ {t.cancel}
                 </button>
               </div>
             </div>

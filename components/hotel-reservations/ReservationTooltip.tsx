@@ -3,6 +3,7 @@ import type React from "react";
 import { Button } from "../../components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../components/ui/tooltip";
 import { Users, Pencil, Trash2 } from "lucide-react";
+import { translations } from "../translations/reservation_hotel_toltip"; // New import
 
 // Interfaces ajustadas para coincidir con el componente principal
 interface Room {
@@ -57,6 +58,10 @@ export default function ReservationTooltip({
   leftPercent,
   widthPercent,
 }: ReservationTooltipProps) {
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
   const isStriped = reservation.status === "pending";
   
   // Encontrar la habitación correspondiente
@@ -72,7 +77,7 @@ export default function ReservationTooltip({
 
   // Formatear fecha
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('es-ES', { 
+    return new Date(date).toLocaleDateString(lang, { 
       day: '2-digit', 
       month: '2-digit', 
       year: 'numeric' 
@@ -97,13 +102,13 @@ export default function ReservationTooltip({
   const getStatusText = () => {
     switch (reservation.status) {
       case "confirmed":
-        return "Confirmado";
+        return t.confirmed;
       case "pending":
-        return "Pendiente";
+        return t.pending;
       case "cancelled":
-        return "Cancelado";
+        return t.cancelled;
       default:
-        return "Desconocido";
+        return t.unknown;
     }
   };
 
@@ -141,97 +146,93 @@ export default function ReservationTooltip({
               {reservation.guests}
             </div>
             {reservation.status === "cancelled" && (
-              <div className="text-[8px] opacity-90">CANCELADO</div>
+              <div className="text-[8px] opacity-90">{t.cancelledLabel}</div>
             )}
           </div>
         </TooltipTrigger>
 
+        <TooltipContent className="bg-zinc-100 border-2 text-zinc-800 p-4 rounded-lg shadow-xl max-w-xs">
+          <div className="space-y-2">
+            <div className="border-b border-zinc-300 pb-2">
+              <p className="font-bold text-base text-yellow-600">{reservation.guestName}</p>
+              <p className="text-xs text-zinc-500">{reservation.guestEmail}</p>
+            </div>
+            
+            <div className="space-y-1.5">
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.room}:</span> {room?.room_number || t.roomNotFound}
+              </p>
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.type}:</span> {room?.room_type || t.typeNA}
+              </p>
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.guests}:</span> {reservation.guests}
+              </p>
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.phone}:</span> {reservation.phone || t.phoneNotAvailable}
+              </p>
+            </div>
 
-<TooltipContent className="bg-zinc-100 border-2 text-zinc-800 p-4 rounded-lg shadow-xl max-w-xs">
-  <div className="space-y-2">
-    <div className="border-b border-zinc-300 pb-2">
-      <p className="font-bold text-base text-yellow-600">{reservation.guestName}</p>
-      <p className="text-xs text-zinc-500">{reservation.guestEmail}</p>
-    </div>
-    
-    <div className="space-y-1.5">
-      <p className="text-sm">
-        <span className="text-zinc-600">Habitación:</span> {room?.room_number || 'No encontrada'}
-      </p>
-      <p className="text-sm">
-        <span className="text-zinc-600">Tipo:</span> {room?.room_type || 'N/A'}
-      </p>
-      <p className="text-sm">
-        <span className="text-zinc-600">Huéspedes:</span> {reservation.guests}
-      </p>
-      <p className="text-sm">
-        <span className="text-zinc-600">Teléfono:</span> {reservation.phone || 'No disponible'}
-      </p>
-    </div>
+            <div className="border-t border-zinc-300 pt-2 space-y-1.5">
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.checkIn}:</span> {formatDate(reservation.checkIn)} {t.checkInTime}
+              </p>
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.checkOut}:</span> {formatDate(reservation.checkOut)} {t.checkOutTime}
+              </p>
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.stayDays}:</span> {calculateStayDays()} {calculateStayDays() === 1 ? t.day : t.days}
+              </p>
+            </div>
 
-    <div className="border-t border-zinc-300 pt-2 space-y-1.5">
-      <p className="text-sm">
-        <span className="text-zinc-600">Check-in:</span> {formatDate(reservation.checkIn)} a las 3:00 PM
-      </p>
-      <p className="text-sm">
-        <span className="text-zinc-600">Check-out:</span> {formatDate(reservation.checkOut)} a la 1:00 PM
-      </p>
-      <p className="text-sm">
-        <span className="text-zinc-600">Días de estadía:</span> {calculateStayDays()} {calculateStayDays() === 1 ? 'día' : 'días'}
-      </p>
-    </div>
+            <div className="border-t border-zinc-300 pt-2">
+              <p className="text-sm">
+                <span className="text-zinc-600">{t.status}:</span> 
+                <span 
+                  className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                  style={{ backgroundColor: getStatusColor(), color: 'white' }}
+                >
+                  {getStatusText()}
+                </span>
+              </p>
+              <p className="text-sm mt-1">
+                <span className="text-zinc-600">{t.total}:</span> 
+                <span className="text-green-600 font-semibold ml-1">
+                  ${typeof reservation.totalPrice === 'number' ? reservation.totalPrice.toFixed(2) : reservation.totalPrice}
+                </span>
+              </p>
+            </div>
 
-    <div className="border-t border-zinc-300 pt-2">
-      <p className="text-sm">
-        <span className="text-zinc-600">Estado:</span> 
-        <span 
-          className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium"
-          style={{ backgroundColor: getStatusColor(), color: 'white' }}
-        >
-          {getStatusText()}
-        </span>
-      </p>
-      <p className="text-sm mt-1">
-        <span className="text-zinc-600">Total:</span> 
-        <span className="text-green-600 font-semibold ml-1">
-          ${typeof reservation.totalPrice === 'number' ? reservation.totalPrice.toFixed(2) : reservation.totalPrice}
-        </span>
-      </p>
-    </div>
-
-    <div className="flex gap-2 mt-3 pt-3 border-t border-zinc-300">
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleEditReservation(reservation);
-        }}
-        className="text-xs px-3 py-1.5 h-auto bg-yellow-400 hover:bg-yellow-500 text-white border-0"
-        disabled={loading}
-      >
-        <Pencil className="w-3 h-3 mr-1" /> Editar
-      </Button>
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (window.confirm('¿Estás seguro de que deseas eliminar esta reserva?')) {
-            handleDeleteReservation(reservation.id);
-          }
-        }}
-        className="text-xs px-3 py-1.5 h-auto bg-red-400 hover:bg-red-500 text-white"
-        disabled={loading}
-      >
-        <Trash2 className="w-3 h-3 mr-1" /> Eliminar
-      </Button>
-    </div>
-  </div>
-</TooltipContent>
-
-
-
+            <div className="flex gap-2 mt-3 pt-3 border-t border-zinc-300">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditReservation(reservation);
+                }}
+                className="text-xs px-3 py-1.5 h-auto bg-yellow-400 hover:bg-yellow-500 text-white border-0"
+                disabled={loading}
+              >
+                <Pencil className="w-3 h-3 mr-1" /> {t.edit}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm(t.deleteConfirm)) {
+                    handleDeleteReservation(reservation.id);
+                  }
+                }}
+                className="text-xs px-3 py-1.5 h-auto bg-red-400 hover:bg-red-500 text-white"
+                disabled={loading}
+              >
+                <Trash2 className="w-3 h-3 mr-1" /> {t.delete}
+              </Button>
+            </div>
+          </div>
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

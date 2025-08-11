@@ -2,7 +2,7 @@
 import type React from "react";
 import { MouseEvent, useState, useEffect } from "react";
 import { Button } from "../../components/ui/button";
-import { translations } from "../translations/reservation_modal"; // New import
+import { translations } from "../translations/rest_reservation_modal"; // New import
 
 interface Table {
   id: number;

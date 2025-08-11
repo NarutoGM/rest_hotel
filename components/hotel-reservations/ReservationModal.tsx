@@ -2,6 +2,7 @@
 import type React from "react";
 import { MouseEvent, useState, useEffect } from "react";
 import { Button } from "../../components/ui/button";
+import { translations } from "../translations/hotel_reservation_modal"; // New import
 
 interface Room {
   id: number;
@@ -65,6 +66,10 @@ export default function ReservationModal({
   onReservationChange,
   onDateChange,
 }: ReservationModalProps) {
+  // Obtener idioma desde localStorage o usar "es" por defecto
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const t = translations[lang as keyof typeof translations] || translations.es;
+
   const [showCustomGuestsInput, setShowCustomGuestsInput] = useState(false);
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
@@ -72,7 +77,7 @@ export default function ReservationModal({
   const [originalRoomId, setOriginalRoomId] = useState<number>(0);
 
   // Ya no bloquea el formulario, solo afecta el botón guardar
-  const hasAvailabilityError = availabilityError === "Error al verificar disponibilidad";
+  const hasAvailabilityError = availabilityError === t.availabilityError;
 
   // Guardar habitación original en modo edición
   useEffect(() => {
@@ -107,7 +112,7 @@ export default function ReservationModal({
           }),
         });
 
-        if (!response.ok) throw new Error('Error al verificar disponibilidad');
+        if (!response.ok) throw new Error(t.availabilityError);
 
         const data: AvailabilityResponse = await response.json();
 
@@ -139,10 +144,10 @@ export default function ReservationModal({
             handleInputChange('roomId', 0);
           }
         } else {
-          throw new Error(data.message || 'Error al verificar disponibilidad');
+          throw new Error(data.message || t.availabilityError);
         }
       } catch (error) {
-        setAvailabilityError(error instanceof Error ? error.message : 'Error desconocido');
+        setAvailabilityError(error instanceof Error ? error.message : t.errorUnknown);
         
         let fallbackRooms = rooms.filter(room => room.status && room.capacity >= newReservation.guests);
 
@@ -231,8 +236,8 @@ export default function ReservationModal({
   };
 
   const getRoomStatusText = (room: Room) => {
-    if (room.room_type === "current") return "Habitación Actual";
-    return "Disponible";
+    if (room.room_type === "current") return t.currentRoom;
+    return t.availableRoom;
   };
 
   const getRoomStatusClass = (room: Room) => {
@@ -242,8 +247,8 @@ export default function ReservationModal({
 
   // Función para obtener el mensaje de error más amigable
   const getAvailabilityMessage = () => {
-    if (availabilityError === "Error al verificar disponibilidad") {
-      return "Intenta seleccionar otro rango de fechas";
+    if (availabilityError === t.availabilityError) {
+      return t.tryDifferentDates;
     }
     return availabilityError;
   };
@@ -257,22 +262,22 @@ export default function ReservationModal({
                      newReservation.phone && newReservation.roomId;
 
   return (
-    <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
+    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
       <div className="bg-white rounded-xl p-6 w-full max-w-4xl shadow-2xl m-4 max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-semibold text-gray-800 mb-6">
-          {isEditing ? "Editar Reserva" : "Nueva Reserva"}
+          {isEditing ? t.editReservation : t.newReservation}
         </h3>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Información de la Estadía */}
           <div className="space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg space-y-4">
-              <h4 className="font-medium text-gray-800">Información de la Estadía</h4>
+              <h4 className="font-medium text-gray-800">{t.stayInfo}</h4>
               
               {/* Fechas */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Check-In</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t.checkIn}</label>
                   <input
                     type="date"
                     value={formatDate(newReservation.checkIn)}
@@ -283,7 +288,7 @@ export default function ReservationModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Check-Out</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t.checkOut}</label>
                   <input
                     type="date"
                     value={formatDate(newReservation.checkOut)}
@@ -297,7 +302,7 @@ export default function ReservationModal({
 
               {/* Número de Huéspedes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Número de Huéspedes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.numberOfGuests}</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {[1, 2, 3, 4, 5].map((num) => (
                     <Button
@@ -320,7 +325,7 @@ export default function ReservationModal({
                     } rounded-lg hover:bg-blue-500 hover:text-white transition-colors`}
                     disabled={loading} // Solo se deshabilita por loading
                   >
-                    Más
+                    {t.more}
                   </Button>
                 </div>
                 {showCustomGuestsInput && (
@@ -338,7 +343,7 @@ export default function ReservationModal({
               {/* Estados de disponibilidad */}
               {checkingAvailability && (
                 <div className="p-2 bg-blue-100 text-blue-700 rounded text-sm">
-                  Verificando disponibilidad...
+                  {t.checkingAvailability}
                 </div>
               )}
 
@@ -351,16 +356,16 @@ export default function ReservationModal({
               {/* Selección de Habitación */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seleccionar Habitación
+                  {t.selectRoom}
                   {!checkingAvailability && (
                     <span className="text-xs text-green-600 ml-2">
-                      ({availableRooms.length} disponible{availableRooms.length !== 1 ? 's' : ''})
+                      ({availableRooms.length} {availableRooms.length === 1 ? t.available : t.availablePlural})
                     </span>
                   )}
                 </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto bg-white p-2 border rounded">
                   {checkingAvailability ? (
-                    <p className="text-sm text-gray-500 p-2">Verificando disponibilidad...</p>
+                    <p className="text-sm text-gray-500 p-2">{t.checkingAvailability}</p>
                   ) : availableRooms.length > 0 ? (
                     availableRooms.map((room) => (
                       <div
@@ -374,21 +379,21 @@ export default function ReservationModal({
                       >
                         <div className="flex justify-between items-center">
                           <div>
-                            <div className="font-medium">Habitación {room.room_number}</div>
+                            <div className="font-medium">{t.room} {room.room_number}</div>
                             <div className="text-xs text-gray-600">
-                              {room.room_type !== "current" ? room.room_type : rooms.find(r => r.id === room.id)?.room_type || room.room_type} • {room.capacity} huésped{room.capacity !== 1 ? 'es' : ''} • {room.number_of_beds} cama{room.number_of_beds !== 1 ? 's' : ''}
+                              {room.room_type !== "current" ? room.room_type : rooms.find(r => r.id === room.id)?.room_type || room.room_type} • {room.capacity} {room.capacity === 1 ? t.guest : t.guests} • {room.number_of_beds} {room.number_of_beds === 1 ? t.bed : t.beds}
                             </div>
                             <div className="text-xs text-gray-500 mt-1">
                               {[
-                                room.has_wifi && 'WiFi',
-                                room.has_air_conditioning && 'A/C',
-                                room.has_tv && 'TV',
-                                room.has_minibar && 'Minibar',
-                                room.has_balcony && 'Balcón'
+                                room.has_wifi && t.wifi,
+                                room.has_air_conditioning && t.airConditioning,
+                                room.has_tv && t.tv,
+                                room.has_minibar && t.minibar,
+                                room.has_balcony && t.balcony
                               ].filter(Boolean).join(' • ')}
                             </div>
                             <div className="text-xs text-gray-500 mt-1">
-                              ${room.price_per_night} por noche
+                              ${room.price_per_night} {t.perNight}
                             </div>
                           </div>
                           <div className={`text-xs px-2 py-1 rounded ${getRoomStatusClass(room)}`}>
@@ -399,7 +404,7 @@ export default function ReservationModal({
                     ))
                   ) : (
                     <p className="text-sm text-gray-500 p-2">
-                      No hay habitaciones disponibles para los criterios seleccionados
+                      {t.noRoomsAvailable}
                     </p>
                   )}
                 </div>
@@ -411,64 +416,64 @@ export default function ReservationModal({
           <div className="space-y-4">
             {/* Resumen de Reserva */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium text-gray-800 mb-3">Habitación:</h4>
+              <h4 className="font-medium text-gray-800 mb-3">{t.room}:</h4>
               <div className="space-y-2 text-sm">
-                <div> {newReservation.roomId ? `Habitación ${availableRooms.find(r => r.id === newReservation.roomId)?.room_number || newReservation.roomId}` : "No seleccionada"}</div>
+                <div> {newReservation.roomId ? `${t.room} ${availableRooms.find(r => r.id === newReservation.roomId)?.room_number || newReservation.roomId}` : t.notSelected}</div>
               </div>
             </div>
             
             <div className="bg-green-50 p-4 rounded-lg space-y-4">
-              <h4 className="font-medium text-gray-800">Información del Huésped</h4>
+              <h4 className="font-medium text-gray-800">{t.guestInfo}</h4>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Huésped *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.guestName}</label>
                 <input
                   value={newReservation.guestName}
                   onChange={(e) => handleInputChange("guestName", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Ingrese el nombre del huésped"
+                  placeholder={t.placeholderName}
                   disabled={loading} // Solo se deshabilita por loading
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.email}</label>
                 <input
                   type="email"
                   value={newReservation.guestEmail}
                   onChange={(e) => handleInputChange("guestEmail", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Ingrese el email del huésped"
+                  placeholder={t.placeholderEmail}
                   disabled={loading} // Solo se deshabilita por loading
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.phone}</label>
                 <input
                   type="tel"
                   value={newReservation.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Ingrese el número de teléfono"
+                  placeholder={t.placeholderPhone}
                   disabled={loading} // Solo se deshabilita por loading
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.status}</label>
                 <select
                   value={newReservation.status}
                   onChange={(e) => handleInputChange("status", e.target.value as "confirmed" | "pending" | "cancelled")}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   disabled={loading} // Solo se deshabilita por loading
                 >
-                  <option value="pending">Pendiente</option>
-                  <option value="confirmed">Confirmado</option>
-                  <option value="cancelled">Cancelado</option>
+                  <option value="pending">{t.pending}</option>
+                  <option value="confirmed">{t.confirmed}</option>
+                  <option value="cancelled">{t.cancelled}</option>
                 </select>
               </div>
             </div>
@@ -482,14 +487,14 @@ export default function ReservationModal({
             className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
             disabled={loading || hasAvailabilityError || !isFormValid} // Solo se bloquea por loading, error de disponibilidad, o formulario inválido
           >
-            {loading ? (isEditing ? "Actualizando..." : "Creando...") : (isEditing ? "Actualizar Reserva" : "Crear Reserva")}
+            {loading ? (isEditing ? t.updating : t.creating) : (isEditing ? t.updateReservation : t.createReservation)}
           </Button>
           <Button
             onClick={onClose}
             className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
             disabled={loading}
           >
-            Cancelar
+            {t.cancel}
           </Button>
         </div>
       </div>
