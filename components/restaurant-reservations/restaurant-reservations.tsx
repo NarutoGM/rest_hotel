@@ -98,7 +98,7 @@ export default function RestaurantReservations({ initialDate = new Date() }: Res
   const timelineRef = useRef<HTMLDivElement>(null);
 
   // Estado para el idioma
-  const [lang, setLang] = useState<"es" | "en" | "fr">("en");
+  const [lang, setLang] = useState<"es" | "en" | "fr">("es");
   const t = translations[lang];
 
   // Cargar idioma desde localStorage al montar

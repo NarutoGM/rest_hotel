@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, User, Lock, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -24,7 +24,7 @@ export default function ProfessionalLogin() {
     }
   }, []);
 
-  // Guardar idioma cuando cambie
+  // Guardar idioma manualmente (cuando el usuario lo cambia en el selector)
   const handleLangChange = (value: "es" | "en" | "fr") => {
     setLang(value);
     localStorage.setItem("lang", value);
@@ -39,14 +39,18 @@ export default function ProfessionalLogin() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+
     const res = await signIn("credentials", {
       redirect: false,
       email: formData.email,
       password: formData.password,
     });
+
     setIsLoading(false);
 
     if (res && res.ok) {
+      // Guardar idioma actual en localStorage al iniciar sesión
+      localStorage.setItem("lang", lang);
       router.push("/dashboard");
     } else {
       setError(t.wrongCredentials);
@@ -60,7 +64,11 @@ export default function ProfessionalLogin() {
 
           {/* Selector de idioma */}
           <div className="absolute top-4 right-4">
-            <select value={lang} onChange={e => handleLangChange(e.target.value as any)} className="border rounded p-1">
+            <select
+              value={lang}
+              onChange={e => handleLangChange(e.target.value as "es" | "en" | "fr")}
+              className="border rounded p-1"
+            >
               <option value="es">ES</option>
               <option value="en">EN</option>
               <option value="fr">FR</option>
@@ -117,8 +125,11 @@ export default function ProfessionalLogin() {
                   required
                   className="w-full pl-10 pr-12 py-3 border border-red-300 rounded-lg bg-red-50/50"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
@@ -143,7 +154,11 @@ export default function ProfessionalLogin() {
             </div>
 
             {/* Botón */}
-            <button type="submit" disabled={isLoading} className="w-full bg-yellow-600 text-white py-3 rounded-lg">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-yellow-600 text-white py-3 rounded-lg"
+            >
               {isLoading ? t.signingIn : t.signIn}
             </button>
           </form>

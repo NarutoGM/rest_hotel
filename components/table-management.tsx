@@ -13,7 +13,7 @@ interface Table {
 
 export default function TableManagement() {
   // Obtener idioma desde localStorage o usar "es" por defecto
-  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "es" : "es";
+  const lang = typeof window !== "undefined" ? localStorage.getItem("lang") || "en" : "en";
   const t = translations[lang as keyof typeof translations] || translations.es;
 
   const [tables, setTables] = useState<Table[]>([]);
