@@ -456,6 +456,7 @@ export default function ReservationModal({
                 >
                   <option value="pending">Pendiente</option>
                   <option value="confirmed">Confirmado</option>
+                  
                 </select>
               </div>
             </div>

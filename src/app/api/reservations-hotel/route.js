@@ -112,7 +112,6 @@ export async function POST(request) {
       body: JSON.stringify(reservationData),
     });
 
-    console.log('Response status:', response.status);
     
     // Log de la respuesta completa para debug
     const responseText = await response.text();

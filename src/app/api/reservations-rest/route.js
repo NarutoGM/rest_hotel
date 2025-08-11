@@ -68,7 +68,7 @@ export async function POST(request) {
       startTime, 
       endTime, 
       numberOfPeople,
-      status = 'pending'
+      status
     } = body;
 
     console.log('Datos recibidos en POST /api/restaurant-reservations:', body);
@@ -83,7 +83,7 @@ export async function POST(request) {
       start_time: startTime.split('T')[1].slice(0, 5),
       end_time: endTime.split('T')[1].slice(0, 5),
       number_of_people: numberOfPeople,
-      reservation_status_id: status === 'pending' ? 2 : 1
+      reservation_status_id: status === 'pending' ? 1 : 2
     };
 
     // Enviar datos a la API remota

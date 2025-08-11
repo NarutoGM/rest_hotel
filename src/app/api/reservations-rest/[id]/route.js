@@ -31,7 +31,7 @@ customerId,
       start_time: startTime.split('T')[1].slice(0, 5),
       end_time: endTime.split('T')[1].slice(0, 5),
       number_of_people: numberOfPeople,
-      reservation_status_id: status === 'pending' ? 2 : 1
+      reservation_status_id: status === 'pending' ? 1 : 2
     };
 
     const remoteResponse = await fetch(`${REMOTE_API_URL}/${id}`, {
