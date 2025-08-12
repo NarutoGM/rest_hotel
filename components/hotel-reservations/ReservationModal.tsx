@@ -31,7 +31,7 @@ interface HotelReservation {
   phone: string;
   checkIn: Date;
   checkOut: Date;
-  status: "confirmed" | "pending" | "cancelled";
+  status: "confirmed" | "pending" | "cancelled" | "completed";
   totalPrice: number;
 }
 
@@ -467,13 +467,15 @@ export default function ReservationModal({
                 <label className="block text-sm font-medium text-gray-700 mb-2">{t.status}</label>
                 <select
                   value={newReservation.status}
-                  onChange={(e) => handleInputChange("status", e.target.value as "confirmed" | "pending" | "cancelled")}
+                  onChange={(e) => handleInputChange("status", e.target.value as "confirmed" | "pending" | "cancelled" | "completed")}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   disabled={loading} // Solo se deshabilita por loading
                 >
                   <option value="pending">{t.pending}</option>
                   <option value="confirmed">{t.confirmed}</option>
                   <option value="cancelled">{t.cancelled}</option>
+                  <option value="completed">{t.completed}</option>
+
                 </select>
               </div>
             </div>

@@ -19,6 +19,7 @@ export const translations = {
     confirmed: "Confirmado",
     pending: "Pendiente",
     cancelled: "Cancelado",
+    completed: "Completado", // Añadido "Completado"
     unknown: "Desconocido",
     cancelledLabel: "CANCELADO",
     total: "Total",
@@ -45,6 +46,8 @@ export const translations = {
     confirmed: "Confirmed",
     pending: "Pending",
     cancelled: "Cancelled",
+        completed: "Completed", 
+
     unknown: "Unknown",
     cancelledLabel: "CANCELLED",
     total: "Total",
@@ -71,6 +74,8 @@ export const translations = {
     confirmed: "Confirmé",
     pending: "En attente",
     cancelled: "Annulé",
+            completed: "Terminé", 
+
     unknown: "Inconnu",
     cancelledLabel: "ANNULÉ",
     total: "Total",

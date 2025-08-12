@@ -321,6 +321,7 @@ export default function RoomManagement() {
             {error}
           </div>
         )}
+        
         {loading && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl shadow-sm flex items-center">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-600 mr-3"></div>

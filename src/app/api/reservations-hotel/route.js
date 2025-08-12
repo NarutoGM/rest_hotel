@@ -168,7 +168,8 @@ function getStatusFromId(statusId) {
   const statusMap = {
     1: 'confirmed',
     2: 'pending',
-    3: 'cancelled'
+    3: 'cancelled',
+    4: 'completed'
   };
   return statusMap[statusId] || 'pending';
 }
@@ -177,7 +178,8 @@ function getStatusId(status) {
   const statusMap = {
     'confirmed': 1,
     'pending': 2,
-    'cancelled': 3
+    'cancelled': 3,
+    'completed': 4
   };
   return statusMap[status] || 2;
 }

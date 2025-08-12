@@ -8,7 +8,7 @@ export async function PUT(request, { params }) {
   try {
     const { id } = await params;  // <-- await aquí
     const body = await request.json();
-    console.log('Datos recibidos para actualizar reserva:', body);
+   // console.log('Datos recibidos para actualizar reserva:', body);
 
     const { roomId, guestName, guestEmail, guests, phone, checkIn, checkOut, status, totalPrice, customerId } = body;
 
@@ -26,7 +26,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    if (!['confirmed', 'pending', 'cancelled'].includes(status)) {
+    if (!['confirmed', 'pending', 'cancelled','completed'].includes(status)) {
       return new Response(
         JSON.stringify({ error: 'Estado inválido' }), 
         { status: 400 }
@@ -143,7 +143,8 @@ function getStatusFromId(statusId) {
   const statusMap = {
     1: 'confirmed',
     2: 'pending',
-    3: 'cancelled'
+    3: 'cancelled',
+    4: 'completed'
   };
   return statusMap[statusId] || 'pending';
 }
@@ -152,7 +153,8 @@ function getStatusId(status) {
   const statusMap = {
     'confirmed': 1,
     'pending': 2,
-    'cancelled': 3
+    'cancelled': 3,
+    'completed': 4
   };
   return statusMap[status] || 2;
 }

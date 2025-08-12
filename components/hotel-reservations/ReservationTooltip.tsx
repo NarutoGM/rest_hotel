@@ -35,7 +35,7 @@ interface HotelReservation {
   phone: string;
   checkIn: Date;
   checkOut: Date;
-  status: "confirmed" | "pending" | "cancelled";
+  status: "confirmed" | "pending" | "cancelled" | "completed"; // Añadido "completed"
   totalPrice: number;
 }
 
@@ -93,6 +93,8 @@ export default function ReservationTooltip({
         return "rgb(234 179 8)"; // yellow-500
       case "cancelled":
         return "rgb(239 68 68)"; // red-500
+      case "completed":
+        return "rgb(96 165 250)"; // blue-400
       default:
         return "rgb(96 165 250)"; // yellow-400
     }
@@ -107,6 +109,8 @@ export default function ReservationTooltip({
         return t.pending;
       case "cancelled":
         return t.cancelled;
+      case "completed":
+        return t.completed;
       default:
         return t.unknown;
     }

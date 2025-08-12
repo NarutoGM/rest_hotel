@@ -36,7 +36,7 @@ interface HotelReservation {
   phone: string;
   checkIn: Date;
   checkOut: Date;
-  status: "confirmed" | "pending" | "cancelled";
+  status: "confirmed" | "pending" | "cancelled" | "completed"; // Añadido "completed"
   totalPrice: number;
 }
 
