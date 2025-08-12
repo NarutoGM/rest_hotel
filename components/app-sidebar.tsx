@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Home, UtensilsCrossed, Utensils, Hotel, Settings, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
-
+import Image from "next/image";
 // Importar traducciones
 import { sidebarTranslations } from "../components/translations/sidebar"
 
@@ -89,7 +89,16 @@ export function AppSidebar({ activeView, setActiveView, ...props }: AppSidebarPr
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="p-2 text-lg font-bold">{t.systemName}</div>
+
+<div className="relative w-60 h-25 mx-auto">
+  <Image
+    src="/logo.png"
+    alt="Logo"
+    fill
+    className="object-contain"
+  />
+</div>     
+
       </SidebarHeader>
       <SidebarContent>
         {navigationItems.map((group) => (
