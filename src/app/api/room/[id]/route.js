@@ -22,7 +22,7 @@ export async function PUT(request, context) {
       images
     } = await request.json();
 
-    // Validaciones
+    // 🛡 Validaciones (las dejo igual que las tuyas)
     if (!room_number || room_number.trim() === '') {
       return new Response(JSON.stringify({ error: 'El número de la habitación es obligatorio' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
@@ -57,16 +57,22 @@ export async function PUT(request, context) {
       return new Response(JSON.stringify({ error: 'Debe proporcionar al menos una imagen' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // 1️⃣ Obtener imágenes actuales
+    // 1️⃣ Obtener imágenes actuales desde API externa
     const currentRes = await fetch(`${API_ROOMS_URL}/${id}`, { headers: HEADERS });
     const currentData = await currentRes.json();
     const currentImages = currentData?.data?.images || [];
 
-    // 2️⃣ Borrar TODAS las imágenes actuales de Firebase
+    // 2️⃣ Borrar solo las imágenes que se eliminan o se reemplazan
+    const imagesToDelete = currentImages.filter(oldImg => {
+      const match = images.find(newImg => newImg.image_url === oldImg.image_url);
+      return !match || isBase64(match.image_url); 
+    });
+
     await Promise.all(
-      currentImages.map(async img => {
+      imagesToDelete.map(async img => {
         try {
           await deleteImageFromFirebase(img.image_url);
+          console.log(`Imagen eliminada: ${img.image_url}`);
         } catch (err) {
           if (err.code === "storage/object-not-found") {
             console.warn(`Imagen ya no existe en Firebase: ${img.image_url}`);
@@ -77,7 +83,7 @@ export async function PUT(request, context) {
       })
     );
 
-    // 3️⃣ Subir TODAS las nuevas imágenes a Firebase
+    // 3️⃣ Subir imágenes nuevas (solo las base64)
     const processedImages = await Promise.all(
       images.map(async (image, index) => {
         if (isBase64(image.image_url)) {
@@ -85,11 +91,11 @@ export async function PUT(request, context) {
           const firebaseUrl = await uploadImageToFirebase(image.image_url, fileName);
           return { image_url: firebaseUrl, order: image.order };
         }
-        return image; // ya es un objeto con image_url y order
+        return image;
       })
     );
 
-    // 4️⃣ Crear body actualizado con URLs de Firebase
+    // 4️⃣ Crear body actualizado
     const updatedBody = {
       room_number,
       room_type,
@@ -105,7 +111,7 @@ export async function PUT(request, context) {
       images: processedImages
     };
 
-    // 5️⃣ Enviar a API externa
+    // 5️⃣ Enviar actualización a API externa
     const res = await fetch(`${API_ROOMS_URL}/${id}`, {
       method: 'PUT',
       headers: HEADERS,
@@ -133,6 +139,7 @@ export async function PUT(request, context) {
     );
   }
 }
+
 
 // DELETE /api/room/[id]
 export async function DELETE(_, context) {

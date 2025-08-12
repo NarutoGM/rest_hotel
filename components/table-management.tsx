@@ -2,6 +2,19 @@
 import type React from "react";
 import { useState, useEffect, MouseEvent } from "react";
 import { translations } from "../components/translations/table_management"; // New import
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon,
+  TagIcon,
+  UserGroupIcon,
+  MapPinIcon,
+  ArrowPathIcon,
+  CheckCircleIcon,
+  DocumentTextIcon,
+  TableCellsIcon
+} from '@heroicons/react/24/outline';
 
 interface Table {
   id: string;
@@ -152,17 +165,19 @@ export default function TableManagement() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">
-                🍽️ {t.tableManagement}
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent flex items-center gap-2">
+                <TableCellsIcon className="h-10 w-10 text-yellow-600" />
+                {t.tableManagement}
               </h1>
               <p className="text-gray-600 mt-2">{t.manageTables}</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none flex items-center gap-2"
               disabled={loading}
             >
-              ✨ {t.addTable}
+              <PlusIcon className="h-5 w-5" />
+              {t.addTable}
             </button>
           </div>
 
@@ -170,7 +185,7 @@ export default function TableManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-yellow-100">
               <div className="flex items-center">
                 <div className="bg-yellow-100 p-3 rounded-lg">
-                  <span className="text-yellow-600 text-xl">🍽️</span>
+                  <TableCellsIcon className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.totalTables}</p>
@@ -181,7 +196,7 @@ export default function TableManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-green-100">
               <div className="flex items-center">
                 <div className="bg-green-100 p-3 rounded-lg">
-                  <span className="text-green-600 text-xl">👥</span>
+                  <UserGroupIcon className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.averageCapacity}</p>
@@ -196,7 +211,7 @@ export default function TableManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-purple-100">
               <div className="flex items-center">
                 <div className="bg-purple-100 p-3 rounded-lg">
-                  <span className="text-purple-600 text-xl">✅</span>
+                  <CheckCircleIcon className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.availableTables}</p>
@@ -211,7 +226,7 @@ export default function TableManagement() {
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl shadow-sm flex items-center">
-            <span className="text-red-500 mr-3">❌</span>
+            <XMarkIcon className="h-5 w-5 text-red-500 mr-3" />
             {error}
           </div>
         )}
@@ -229,7 +244,7 @@ export default function TableManagement() {
               className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             >
               <div className="relative h-48 bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-400 text-4xl">🍽️</span>
+                <TableCellsIcon className="h-16 w-16 text-gray-400" />
               </div>
 
               <div className="p-6">
@@ -252,17 +267,19 @@ export default function TableManagement() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEditTable(table)}
-                    className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 font-medium"
+                    className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 font-medium flex items-center justify-center gap-1"
                     disabled={loading}
                   >
-                    ✏️ {t.edit}
+                    <PencilIcon className="h-4 w-4" />
+                    {t.edit}
                   </button>
                   <button
                     onClick={() => handleDeleteTable(table.id)}
-                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium"
+                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium flex items-center justify-center gap-1"
                     disabled={loading}
                   >
-                    🗑️ {t.delete}
+                    <TrashIcon className="h-4 w-4" />
+                    {t.delete}
                   </button>
                 </div>
               </div>
@@ -272,14 +289,15 @@ export default function TableManagement() {
 
         {tables.length === 0 && !loading && (
           <div className="text-center py-12">
-            <span className="text-6xl mb-4 block">🍽️</span>
+            <TableCellsIcon className="h-24 w-24 mx-auto text-gray-300 mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">{t.noTablesRegistered}</h3>
             <p className="text-gray-500 mb-6">{t.startAddingTable}</p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200"
+              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 mx-auto"
             >
-              ✨ {t.addFirstTable}
+              <PlusIcon className="h-5 w-5" />
+              {t.addFirstTable}
             </button>
           </div>
         )}
@@ -292,23 +310,34 @@ export default function TableManagement() {
             <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-bold text-gray-800">
-                    {editingTableId ? `✏️ ${t.editTable}` : `✨ ${t.addNewTable}`}
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    {editingTableId ? (
+                      <>
+                        <PencilIcon className="h-6 w-6" />
+                        {t.editTable}
+                      </>
+                    ) : (
+                      <>
+                        <PlusIcon className="h-6 w-6" />
+                        {t.addNewTable}
+                      </>
+                    )}
                   </h3>
                   <button
                     onClick={handleCloseModal}
                     className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition"
                     disabled={loading}
                   >
-                    ✕
+                    <XMarkIcon className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
               <div className="p-6 space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    🏷️ {t.tableNumber}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <TagIcon className="h-4 w-4" />
+                    {t.tableNumber}
                   </label>
                   <input
                     value={newTableNumber}
@@ -320,8 +349,9 @@ export default function TableManagement() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    👥 {t.capacity}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <UserGroupIcon className="h-4 w-4" />
+                    {t.capacity}
                   </label>
                   <input
                     type="number"
@@ -335,8 +365,9 @@ export default function TableManagement() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    📍 {t.location}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <MapPinIcon className="h-4 w-4" />
+                    {t.location}
                   </label>
                   <select
                     value={newTableLocation}
@@ -351,8 +382,9 @@ export default function TableManagement() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    🔄 {t.status}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <ArrowPathIcon className="h-4 w-4" />
+                    {t.status}
                   </label>
                   <select
                     value={newTableStatus}
@@ -370,7 +402,7 @@ export default function TableManagement() {
               <div className="p-6 flex gap-4 border-t border-gray-200">
                 <button
                   onClick={handleAddTable}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
                   disabled={loading}
                 >
                   {loading ? (
@@ -379,15 +411,28 @@ export default function TableManagement() {
                       {t.processing}
                     </div>
                   ) : (
-                    <>{editingTableId ? `💾 ${t.saveChanges}` : `✨ ${t.addTable}`}</>
+                    <>
+                      {editingTableId ? (
+                        <>
+                          <DocumentTextIcon className="h-5 w-5" />
+                          {t.saveChanges}
+                        </>
+                      ) : (
+                        <>
+                          <PlusIcon className="h-5 w-5" />
+                          {t.addTable}
+                        </>
+                      )}
+                    </>
                   )}
                 </button>
                 <button
                   onClick={handleCloseModal}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50"
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
                   disabled={loading}
                 >
-                  ❌ {t.cancel}
+                  <XMarkIcon className="h-5 w-5" />
+                  {t.cancel}
                 </button>
               </div>
             </div>

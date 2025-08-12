@@ -3,6 +3,23 @@ import type React from "react";
 import { useState, useEffect, MouseEvent } from "react";
 import { translations } from "../components/translations/room_management"; // New import
 
+import {
+  PlusIcon,
+  PhotoIcon,
+  CurrencyDollarIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon,
+  TagIcon,
+  DocumentTextIcon,
+  HomeIcon,
+  UserGroupIcon,
+  CogIcon,
+  WifiIcon,
+  TvIcon,
+  CameraIcon
+} from '@heroicons/react/24/outline';
+
 interface Room {
   id: string;
   room_number: string;
@@ -242,17 +259,19 @@ export default function RoomManagement() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">
-                🏨 {t.roomManagement}
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent flex items-center gap-2">
+                <HomeIcon className="h-10 w-10 text-yellow-600" />
+                {t.roomManagement}
               </h1>
               <p className="text-gray-600 mt-2">{t.manageRooms}</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none flex items-center gap-2"
               disabled={loading}
             >
-              ✨ {t.addRoom}
+              <PlusIcon className="h-5 w-5" />
+              {t.addRoom}
             </button>
           </div>
 
@@ -260,7 +279,7 @@ export default function RoomManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-yellow-100">
               <div className="flex items-center">
                 <div className="bg-yellow-100 p-3 rounded-lg">
-                  <span className="text-yellow-600 text-xl">🛏️</span>
+                  <HomeIcon className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.totalRooms}</p>
@@ -271,7 +290,7 @@ export default function RoomManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-green-100">
               <div className="flex items-center">
                 <div className="bg-green-100 p-3 rounded-lg">
-                  <span className="text-green-600 text-xl">💰</span>
+                  <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.averagePrice}</p>
@@ -284,7 +303,7 @@ export default function RoomManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-purple-100">
               <div className="flex items-center">
                 <div className="bg-purple-100 p-3 rounded-lg">
-                  <span className="text-purple-600 text-xl">📷</span>
+                  <PhotoIcon className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.totalImages}</p>
@@ -299,7 +318,7 @@ export default function RoomManagement() {
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl shadow-sm flex items-center">
-            <span className="text-red-500 mr-3">❌</span>
+            <XMarkIcon className="h-5 w-5 text-red-500 mr-3" />
             {error}
           </div>
         )}
@@ -333,7 +352,7 @@ export default function RoomManagement() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-400 text-4xl">🛏️</span>
+                    <HomeIcon className="h-16 w-16 text-gray-400" />
                   </div>
                 )}
               </div>
@@ -390,17 +409,19 @@ export default function RoomManagement() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEditRoom(room)}
-                    className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 font-medium"
+                    className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 font-medium flex items-center justify-center gap-1"
                     disabled={loading}
                   >
-                    ✏️ {t.edit}
+                    <PencilIcon className="h-4 w-4" />
+                    {t.edit}
                   </button>
                   <button
                     onClick={() => handleDeleteRoom(room.id)}
-                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium"
+                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium flex items-center justify-center gap-1"
                     disabled={loading}
                   >
-                    🗑️ {t.delete}
+                    <TrashIcon className="h-4 w-4" />
+                    {t.delete}
                   </button>
                 </div>
               </div>
@@ -410,14 +431,15 @@ export default function RoomManagement() {
 
         {rooms.length === 0 && !loading && (
           <div className="text-center py-12">
-            <span className="text-6xl mb-4 block">🛏️</span>
+            <HomeIcon className="h-24 w-24 mx-auto text-gray-300 mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">{t.noRoomsRegistered}</h3>
             <p className="text-gray-500 mb-6">{t.startAddingRoom}</p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200"
+              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 mx-auto"
             >
-              ✨ {t.addFirstRoom}
+              <PlusIcon className="h-5 w-5" />
+              {t.addFirstRoom}
             </button>
           </div>
         )}
@@ -430,15 +452,25 @@ export default function RoomManagement() {
             <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-bold text-gray-800">
-                    {editingRoomId ? `✏️ ${t.editRoom}` : `✨ ${t.addNewRoom}`}
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    {editingRoomId ? (
+                      <>
+                        <PencilIcon className="h-6 w-6" />
+                        {t.editRoom}
+                      </>
+                    ) : (
+                      <>
+                        <PlusIcon className="h-6 w-6" />
+                        {t.addNewRoom}
+                      </>
+                    )}
                   </h3>
                   <button
                     onClick={handleCloseModal}
                     className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition"
                     disabled={loading}
                   >
-                    ✕
+                    <XMarkIcon className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -447,8 +479,9 @@ export default function RoomManagement() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        🏷️ {t.roomNumber}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <TagIcon className="h-4 w-4" />
+                        {t.roomNumber}
                       </label>
                       <input
                         value={newRoomNumber}
@@ -460,8 +493,9 @@ export default function RoomManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        🛋️ {t.type}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <HomeIcon className="h-4 w-4" />
+                        {t.type}
                       </label>
                       <select
                         value={newRoomType}
@@ -477,8 +511,9 @@ export default function RoomManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        👥 {t.capacity}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <UserGroupIcon className="h-4 w-4" />
+                        {t.capacity}
                       </label>
                       <input
                         type="number"
@@ -492,8 +527,9 @@ export default function RoomManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        🛏️ {t.numberOfBeds}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <HomeIcon className="h-4 w-4" />
+                        {t.numberOfBeds}
                       </label>
                       <input
                         type="number"
@@ -507,8 +543,9 @@ export default function RoomManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        💰 {t.pricePerNight}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <CurrencyDollarIcon className="h-4 w-4" />
+                        {t.pricePerNight}
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-3 text-gray-500">$</span>
@@ -526,8 +563,9 @@ export default function RoomManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        📝 {t.description}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <DocumentTextIcon className="h-4 w-4" />
+                        {t.description}
                       </label>
                       <textarea
                         value={newRoomDescription}
@@ -542,8 +580,9 @@ export default function RoomManagement() {
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        ⚙️ {t.amenities}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <CogIcon className="h-4 w-4" />
+                        {t.amenities}
                       </label>
                       <div className="flex space-x-6">
                         <div className="flex items-center">
@@ -600,11 +639,11 @@ export default function RoomManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        📷 {t.imageManagement}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <PhotoIcon className="h-4 w-4" />
+                        {t.imageManagement}
                       </label>
                     
-
                       <div className="bg-gray-50 rounded-xl p-4 mb-4">
                         <h4 className="text-sm font-medium text-gray-600 mb-3">{t.uploadFromDevice}</h4>
                         <input
@@ -633,16 +672,16 @@ export default function RoomManagement() {
                            
                               <button
                                 onClick={() => handleRemoveImage(index)}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition opacity-0 group-hover:opacity-100 text-xs"
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
                                 disabled={loading}
                               >
-                                ✕
+                                <XMarkIcon className="h-3 w-3" />
                               </button>
                             </div>
                           ))}
                           {newRoomImages.length === 0 && (
                             <div className="col-span-2 text-center py-8 text-gray-400">
-                              <span className="text-4xl mb-2 block">📷</span>
+                              <CameraIcon className="h-16 w-16 mx-auto mb-2" />
                               <p className="text-sm">{t.noImagesAdded}</p>
                             </div>
                           )}
@@ -655,7 +694,7 @@ export default function RoomManagement() {
                 <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200">
                   <button
                     onClick={handleAddRoom}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
                     disabled={loading}
                   >
                     {loading ? (
@@ -664,15 +703,28 @@ export default function RoomManagement() {
                         {t.processing}
                       </div>
                     ) : (
-                      <>{editingRoomId ? `💾 ${t.saveChanges}` : `✨ ${t.addRoom}`}</>
+                      <>
+                        {editingRoomId ? (
+                          <>
+                            <DocumentTextIcon className="h-5 w-5" />
+                            {t.saveChanges}
+                          </>
+                        ) : (
+                          <>
+                            <PlusIcon className="h-5 w-5" />
+                            {t.addRoom}
+                          </>
+                        )}
+                      </>
                     )}
                   </button>
                   <button
                     onClick={handleCloseModal}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50"
+                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
                     disabled={loading}
                   >
-                    ❌ {t.cancel}
+                    <XMarkIcon className="h-5 w-5" />
+                    {t.cancel}
                   </button>
                 </div>
               </div>

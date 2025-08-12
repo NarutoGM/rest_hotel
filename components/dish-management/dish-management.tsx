@@ -2,6 +2,18 @@
 import type React from "react";
 import { useState, useEffect, MouseEvent } from "react";
 import { translations } from "../translations/dish_management"; // New import
+import {
+  PlusIcon,
+  PhotoIcon,
+  CurrencyDollarIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon,
+  TagIcon,
+  DocumentTextIcon,
+  RectangleStackIcon,
+  CameraIcon
+} from '@heroicons/react/24/outline';
 
 interface Dish {
   id: string;
@@ -235,17 +247,19 @@ export default function DishManagement() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">
-                🍽️ {t.dishManagement}
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent flex items-center gap-2">
+                <RectangleStackIcon className="h-10 w-10 text-yellow-600" />
+                {t.dishManagement}
               </h1>
               <p className="text-gray-600 mt-2">{t.manageDishes}</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none flex items-center gap-2"
               disabled={loading}
             >
-              ✨ {t.addDish}
+              <PlusIcon className="h-5 w-5" />
+              {t.addDish}
             </button>
           </div>
 
@@ -253,7 +267,7 @@ export default function DishManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-yellow-100">
               <div className="flex items-center">
                 <div className="bg-yellow-100 p-3 rounded-lg">
-                  <span className="text-yellow-600 text-xl">🍕</span>
+                  <RectangleStackIcon className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.totalDishes}</p>
@@ -264,7 +278,7 @@ export default function DishManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-green-100">
               <div className="flex items-center">
                 <div className="bg-green-100 p-3 rounded-lg">
-                  <span className="text-green-600 text-xl">💰</span>
+                  <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.averagePrice}</p>
@@ -285,7 +299,7 @@ export default function DishManagement() {
             <div className="bg-white rounded-xl p-4 shadow-md border border-blue-100">
               <div className="flex items-center">
                 <div className="bg-blue-100 p-3 rounded-lg">
-                  <span className="text-blue-600 text-xl">📷</span>
+                  <PhotoIcon className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-gray-600 text-sm">{t.totalImages}</p>
@@ -300,7 +314,7 @@ export default function DishManagement() {
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl shadow-sm flex items-center">
-            <span className="text-red-500 mr-3">❌</span>
+            <XMarkIcon className="h-5 w-5 text-red-500 mr-3" />
             {error}
           </div>
         )}
@@ -331,7 +345,7 @@ export default function DishManagement() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-400 text-4xl">🍽️</span>
+                    <RectangleStackIcon className="h-16 w-16 text-gray-400" />
                   </div>
                 )}
               </div>
@@ -365,17 +379,19 @@ export default function DishManagement() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEditDish(dish)}
-                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition disabled:opacity-50 font-medium"
+                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition disabled:opacity-50 font-medium flex items-center justify-center gap-1"
                     disabled={loading}
                   >
-                    ✏️ {t.edit}
+                    <PencilIcon className="h-4 w-4" />
+                    {t.edit}
                   </button>
                   <button
                     onClick={() => handleDeleteDish(dish.id)}
-                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium"
+                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50 font-medium flex items-center justify-center gap-1"
                     disabled={loading}
                   >
-                    🗑️ {t.delete}
+                    <TrashIcon className="h-4 w-4" />
+                    {t.delete}
                   </button>
                 </div>
               </div>
@@ -385,14 +401,15 @@ export default function DishManagement() {
 
         {dishes.length === 0 && !loading && (
           <div className="text-center py-12">
-            <span className="text-6xl mb-4 block">🍽️</span>
+            <RectangleStackIcon className="h-24 w-24 mx-auto text-gray-300 mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">{t.noDishesRegistered}</h3>
             <p className="text-gray-500 mb-6">{t.startAddingDish}</p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200"
+              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 mx-auto"
             >
-              ✨ {t.addFirstDish}
+              <PlusIcon className="h-5 w-5" />
+              {t.addFirstDish}
             </button>
           </div>
         )}
@@ -406,15 +423,25 @@ export default function DishManagement() {
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
               <div className="flex justify-between нужна ли эта часть? items-center">
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {editingDishId ? `✏️ ${t.editDish}` : `✨ ${t.addNewDish}`}
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  {editingDishId ? (
+                    <>
+                      <PencilIcon className="h-6 w-6" />
+                      {t.editDish}
+                    </>
+                  ) : (
+                    <>
+                      <PlusIcon className="h-6 w-6" />
+                      {t.addNewDish}
+                    </>
+                  )}
                 </h3>
                 <button
                   onClick={handleCloseModal}
                   className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition"
                   disabled={loading}
                 >
-                  ✕
+                  <XMarkIcon className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -423,8 +450,9 @@ export default function DishManagement() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      🏷️ {t.dishName}
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                      <TagIcon className="h-4 w-4" />
+                      {t.dishName}
                     </label>
                     <input
                       value={newDishName}
@@ -436,8 +464,9 @@ export default function DishManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📝 {t.description}
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                      <DocumentTextIcon className="h-4 w-4" />
+                      {t.description}
                     </label>
                     <textarea
                       value={newDishDescription}
@@ -450,8 +479,9 @@ export default function DishManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📋 {t.category}
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                      <RectangleStackIcon className="h-4 w-4" />
+                      {t.category}
                     </label>
                     <select
                       value={newDishCategoryId}
@@ -469,8 +499,9 @@ export default function DishManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      💰 {t.price}
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                      <CurrencyDollarIcon className="h-4 w-4" />
+                      {t.price}
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-3 text-gray-500">$</span>
@@ -490,11 +521,10 @@ export default function DishManagement() {
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📷 {t.imageManagement}
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                      <PhotoIcon className="h-4 w-4" />
+                      {t.imageManagement}
                     </label>
-
-                  
 
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
                       <h4 className="text-sm font-medium text-gray-600 mb-3">{t.uploadFromDevice}</h4>
@@ -523,16 +553,16 @@ export default function DishManagement() {
                             />
                             <button
                               onClick={() => handleRemoveImage(index)}
-                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition opacity-0 group-hover:opacity-100 text-xs"
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
                               disabled={loading}
                             >
-                              ✕
+                              <XMarkIcon className="h-3 w-3" />
                             </button>
                           </div>
                         ))}
                         {newDishImages.length === 0 && (
                           <div className="col-span-2 text-center py-8 text-gray-400">
-                            <span className="text-4xl mb-2 block">📷</span>
+                            <CameraIcon className="h-16 w-16 mx-auto mb-2" />
                             <p className="text-sm">{t.noImagesAdded}</p>
                           </div>
                         )}
@@ -545,7 +575,7 @@ export default function DishManagement() {
               <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200">
                 <button
                   onClick={handleAddDish}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-xl font-semibold shadow-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
                   disabled={loading}
                 >
                   {loading ? (
@@ -554,15 +584,28 @@ export default function DishManagement() {
                       {t.processing}
                     </div>
                   ) : (
-                    <>{editingDishId ? `💾 ${t.saveChanges}` : `✨ ${t.addDish}`}</>
+                    <>
+                      {editingDishId ? (
+                        <>
+                          <DocumentTextIcon className="h-5 w-5" />
+                          {t.saveChanges}
+                        </>
+                      ) : (
+                        <>
+                          <PlusIcon className="h-5 w-5" />
+                          {t.addDish}
+                        </>
+                      )}
+                    </>
                   )}
                 </button>
                 <button
                   onClick={handleCloseModal}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50"
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
                   disabled={loading}
                 >
-                  ❌ {t.cancel}
+                  <XMarkIcon className="h-5 w-5" />
+                  {t.cancel}
                 </button>
               </div>
             </div>

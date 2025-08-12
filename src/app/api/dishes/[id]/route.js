@@ -8,18 +8,25 @@ export async function PUT(request, context) {
   try {
     const { id } = await context.params;
     const { name, description, price, images, category_id } = await request.json();
+    console.log("images recibidas:", images);
 
-    // 1️⃣ Obtener imágenes actuales
+    // 1️⃣ Obtener imágenes actuales desde la API externa
     const currentRes = await fetch(`${API_BASE_URL}/${id}`, { headers: HEADERS });
     const currentData = await currentRes.json();
     const currentImages = currentData?.data?.images || [];
 
-    // 2️⃣ Borrar TODAS las imágenes actuales de Firebase
+    // 2️⃣ Determinar cuáles imágenes borrar
+    // - Se borra si: ya no está en el nuevo array o si viene en base64 (se reemplazará)
+    const imagesToDelete = currentImages.filter(oldImg => {
+      const match = images.find(newImg => newImg.image_url === oldImg.image_url);
+      return !match || isBase64(match.image_url);
+    });
+
     await Promise.all(
-      currentImages.map(img => deleteImageFromFirebase(img.image_url))
+      imagesToDelete.map(img => deleteImageFromFirebase(img.image_url))
     );
 
-    // 3️⃣ Subir TODAS las nuevas imágenes a Firebase
+    // 3️⃣ Procesar y subir imágenes nuevas si es necesario
     const uploadedImages = await Promise.all(
       (images || []).map(async (img, index) => {
         // Si viene en base64 → subir a Firebase
@@ -28,12 +35,12 @@ export async function PUT(request, context) {
           const firebaseUrl = await uploadImageToFirebase(img.image_url, fileName);
           return { image_url: firebaseUrl, order: img.order };
         }
-        // Si ya es una URL, igual la conservamos como está
+        // Si ya es URL → mantener
         return img;
       })
     );
 
-    // 4️⃣ Enviar actualización al servidor externo
+    // 4️⃣ Enviar actualización a la API externa
     const res = await fetch(`${API_BASE_URL}/${id}`, {
       method: 'PUT',
       headers: HEADERS,
@@ -42,7 +49,7 @@ export async function PUT(request, context) {
         description: description ?? "",
         price: Number(price),
         category_id,
-        images: uploadedImages 
+        images: uploadedImages
       })
     });
 
