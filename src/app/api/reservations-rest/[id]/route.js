@@ -6,32 +6,40 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const body = await request.json();
     console.log('Cuerpo de la solicitud PUT:', body);
+
     const { 
       tableId, 
       guestName, 
       guestEmail, 
       phone, 
       reservationDate, 
-customerId,
+      customerId,
       startTime, 
       endTime, 
       numberOfPeople,
       status
     } = body;
 
+    // Mapeo centralizado de estados
+    const statusMap = {
+      confirmed: 1,
+      pending: 2,
+      cancelled: 3,
+      completed: 4
+    };
 
+    // Transformar datos
     const transformedReservation = {
       customer_full_name: guestName,
       customer_email: guestEmail,
-        customer_id: body.customerId, // ← añadir esto
-
+      customer_id: customerId,
       customer_phone: phone,
       table_id: tableId,
       reservation_date: reservationDate,
       start_time: startTime.split('T')[1].slice(0, 5),
       end_time: endTime.split('T')[1].slice(0, 5),
       number_of_people: numberOfPeople,
-      reservation_status_id: status === 'pending' ? 1 : 2
+      reservation_status_id: statusMap[status] ?? null
     };
 
     const remoteResponse = await fetch(`${REMOTE_API_URL}/${id}`, {
@@ -47,6 +55,7 @@ customerId,
 
     const remoteData = await remoteResponse.json();
     return new Response(JSON.stringify(remoteData), { status: 200 });
+
   } catch (error) {
     console.error('Error en PUT /api/restaurant-reservations/[id]:', error);
     return new Response(

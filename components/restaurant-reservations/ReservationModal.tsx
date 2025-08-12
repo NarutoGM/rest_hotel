@@ -26,7 +26,7 @@ interface ReservationModalProps {
     numberOfPeople: number;
     startTime: Date;
     endTime: Date;
-    status: "confirmed" | "pending";
+    status: "confirmed" | "pending" | "cancelled" | "completed"; 
   };
   onClose: () => void;
   onSave: () => void;
@@ -454,6 +454,8 @@ export default function ReservationModal({
                 >
                   <option value="pending">{t.pending}</option>
                   <option value="confirmed">{t.confirmed}</option>
+                  <option value="cancelled">{t.cancelled}</option>
+                  <option value="completed">{t.completed}</option>
                 </select>
               </div>
             </div>

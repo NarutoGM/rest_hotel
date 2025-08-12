@@ -25,7 +25,7 @@ interface RestaurantReservation {
   startTime: Date;
   endTime: Date;
   numberOfPeople: number;
-  status: "confirmed" | "pending" | "cancelled";
+  status: "confirmed" | "pending" | "cancelled" | "completed";
   statusColor: string;
   statusDescription: string;
   tableNumber: string;

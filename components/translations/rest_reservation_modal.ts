@@ -1,3 +1,5 @@
+import { ca } from "date-fns/locale";
+
 // translations/reservation_modal.ts
 export const translations = {
   es: {
@@ -28,6 +30,8 @@ export const translations = {
     status: "Estado",
     pending: "Pendiente",
     confirmed: "Confirmado",
+    cancelled: "Cancelado",
+    completed: "Completado",
     placeholderName: "Ingrese el nombre del cliente",
     placeholderEmail: "Ingrese el email del cliente",
     placeholderPhone: "Ingrese el número de teléfono",
@@ -67,6 +71,8 @@ export const translations = {
     status: "Status",
     pending: "Pending",
     confirmed: "Confirmed",
+    cancelled: "Cancelled",
+    completed: "Completed",
     placeholderName: "Enter the client's name",
     placeholderEmail: "Enter the client's email",
     placeholderPhone: "Enter the client's phone number",
@@ -106,6 +112,8 @@ export const translations = {
     status: "Statut",
     pending: "En attente",
     confirmed: "Confirmé",
+    cancelled: "Annulé",
+    completed: "Terminé",
     placeholderName: "Entrez le nom du client",
     placeholderEmail: "Entrez l'email du client",
     placeholderPhone: "Entrez le numéro de téléphone du client",

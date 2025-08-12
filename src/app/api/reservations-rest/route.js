@@ -71,6 +71,13 @@ export async function POST(request) {
       status
     } = body;
 
+    // Mapeo de estados a IDs
+    const statusMap = {
+      confirmed: 1,
+      pending: 2,
+      cancelled: 3,
+      completed: 4
+    };
 
     // Transformar datos
     const transformedReservation = {
@@ -82,7 +89,7 @@ export async function POST(request) {
       start_time: startTime.split('T')[1].slice(0, 5),
       end_time: endTime.split('T')[1].slice(0, 5),
       number_of_people: numberOfPeople,
-      reservation_status_id: status === 'pending' ? 1 : 2
+      reservation_status_id: statusMap[status] ?? null // null si no existe el estado
     };
 
     console.log('Datos transformados para la API remota:', transformedReservation);
@@ -100,8 +107,8 @@ export async function POST(request) {
     }
 
     const remoteData = await remoteResponse.json();
-
     return new Response(JSON.stringify(remoteData), { status: 201 });
+
   } catch (error) {
     console.error('Error en POST /api/restaurant-reservations:', error);
     return new Response(
@@ -113,3 +120,4 @@ export async function POST(request) {
     );
   }
 }
+
