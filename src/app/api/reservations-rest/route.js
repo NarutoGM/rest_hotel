@@ -71,7 +71,6 @@ export async function POST(request) {
       status
     } = body;
 
-    console.log('Datos recibidos en POST /api/restaurant-reservations:', body);
 
     // Transformar datos
     const transformedReservation = {
@@ -85,6 +84,8 @@ export async function POST(request) {
       number_of_people: numberOfPeople,
       reservation_status_id: status === 'pending' ? 1 : 2
     };
+
+    console.log('Datos transformados para la API remota:', transformedReservation);
 
     // Enviar datos a la API remota
     const remoteResponse = await fetch(REMOTE_API_URL, {

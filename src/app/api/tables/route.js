@@ -50,7 +50,7 @@ export async function POST(request) {
     if (!status || status.trim() === '') {
       return new Response(JSON.stringify({ error: 'El estado es obligatorio' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
-
+     console.log('Datos recibidos:', { table_number, capacity, location, status });
     const res = await fetch(API_TABLES_URL, {
       method: 'POST',
       headers: HEADERS,

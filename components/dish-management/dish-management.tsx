@@ -541,7 +541,7 @@ export default function DishManagement() {
                       <h4 className="text-sm font-medium text-gray-600 mb-3">
                         {t.addedImages} ({newDishImages.length})
                       </h4>
-                      <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                      <div className="grid grid-cols-2 p-2 gap-3 max-h-60 overflow-y-auto">
                         {newDishImages.map((image, index) => (
                           <div key={index} className="relative group">
                             <img

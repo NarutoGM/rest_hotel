@@ -58,7 +58,7 @@ export async function PUT(request, context) {
 export async function DELETE(_, context) {
   try {
     const { id } = await context.params;
-
+    console.log('Eliminando mesa con ID:', id);
     const res = await fetch(`${API_TABLES_URL}/${id}`, {
       method: 'DELETE',
       headers: HEADERS,

@@ -655,11 +655,11 @@ export default function RoomManagement() {
                         />
                       </div>
 
-                      <div>
+                      <div >
                         <h4 className="text-sm font-medium text-gray-600 mb-3">
                           {t.addedImages} ({newRoomImages.length})
                         </h4>
-                        <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                        <div className="grid grid-cols-2 p-2 gap-3 max-h-60 overflow-y-auto">
                           {newRoomImages.map((image, index) => (
                             <div key={index} className="relative group">
                               <img
@@ -730,6 +730,8 @@ export default function RoomManagement() {
             </div>
           </div>
         )}
+
+        
       </div>
     </div>
   );

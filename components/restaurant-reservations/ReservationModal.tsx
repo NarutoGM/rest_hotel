@@ -251,7 +251,7 @@ export default function ReservationModal({
 
   return (
     <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
-      <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl m-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl p-6 w-full max-w-4xl shadow-2xl m-4 max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-semibold text-gray-800 mb-6">
           {isEditing ? t.editReservation : t.newReservation}
         </h3>
