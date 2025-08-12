@@ -494,26 +494,7 @@ export default function DishManagement() {
                       📷 {t.imageManagement}
                     </label>
 
-                    <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">{t.addFromUrl}</h4>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={newImageUrl}
-                          onChange={(e) => setNewImageUrl(e.target.value)}
-                          className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none disabled:bg-gray-100"
-                          placeholder={t.placeholderImageUrl}
-                          disabled={loading}
-                        />
-                        <button
-                          onClick={handleAddImageUrl}
-                          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:bg-green-300 font-medium"
-                          disabled={loading || !newImageUrl.trim()}
-                        >
-                          ➕
-                        </button>
-                      </div>
-                    </div>
+                  
 
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
                       <h4 className="text-sm font-medium text-gray-600 mb-3">{t.uploadFromDevice}</h4>
