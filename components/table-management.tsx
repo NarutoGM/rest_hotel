@@ -243,8 +243,8 @@ export default function TableManagement() {
               key={table.id}
               className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             >
-              <div className="relative h-48 bg-gray-100 flex items-center justify-center">
-                <TableCellsIcon className="h-16 w-16 text-gray-400" />
+              <div className="relative h-20 text-4xl bg-gray-100 flex items-center justify-center">
+              🍽️
               </div>
 
               <div className="p-6">
