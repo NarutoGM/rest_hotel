@@ -248,8 +248,7 @@ export default function DishManagement() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent flex items-center gap-2">
-                <RectangleStackIcon className="h-10 w-10 text-yellow-600" />
-                {t.dishManagement}
+               🍽️ {t.dishManagement}
               </h1>
               <p className="text-gray-600 mt-2">{t.manageDishes}</p>
             </div>
