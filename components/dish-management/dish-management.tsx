@@ -12,7 +12,8 @@ import {
   TagIcon,
   DocumentTextIcon,
   RectangleStackIcon,
-  CameraIcon
+  CameraIcon,
+  ArrowUpTrayIcon
 } from '@heroicons/react/24/outline';
 
 interface Dish {
@@ -525,17 +526,32 @@ export default function DishManagement() {
                       {t.imageManagement}
                     </label>
 
-                    <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">{t.uploadFromDevice}</h4>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg disabled:bg-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
-                        disabled={loading}
-                      />
-                    </div>
+        <div className="bg-gray-50 rounded-xl p-4 mb-4">
+  <h4 className="text-sm font-medium text-gray-600 mb-3">
+    {t.uploadFromDevice}
+  </h4>
+
+  <label
+    htmlFor="fileUpload"
+    className="flex items-center gap-2 px-4 py-2 text-yellow-700 bg-yellow-50 rounded-lg border border-yellow-200 cursor-pointer hover:bg-yellow-100 transition-colors duration-200 shadow-sm hover:shadow-md"
+  >
+    <ArrowUpTrayIcon className="w-5 h-5" />
+    <span className="text-sm font-medium">{t.chooseFiles}</span>
+  </label>
+
+  <input
+    id="fileUpload"
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={handleImageChange}
+    className="hidden"
+    disabled={loading}
+  />
+</div>
+
+
+                    
 
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 mb-3">

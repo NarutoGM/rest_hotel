@@ -23,6 +23,8 @@ export const translations = {
     description: "Descripción",
     category: "Categoría",
     price: "Precio",
+                chooseFiles: "Elegir Archivos",
+
     imageManagement: "Gestión de Imágenes",
     addFromUrl: "Agregar desde URL",
     uploadFromDevice: "Subir desde dispositivo",
@@ -67,6 +69,8 @@ export const translations = {
     addNewDish: "Add New Dish",
     dishName: "Dish Name",
     description: "Description",
+                    chooseFiles: "Choose Files",
+
     category: "Category",
     price: "Price",
     imageManagement: "Image Management",
@@ -115,6 +119,8 @@ export const translations = {
     description: "Description",
     category: "Catégorie",
     price: "Prix",
+                        chooseFiles: "Choisir des fichiers",
+
     imageManagement: "Gestion des images",
     addFromUrl: "Ajouter depuis une URL",
     uploadFromDevice: "Télécharger depuis l'appareil",

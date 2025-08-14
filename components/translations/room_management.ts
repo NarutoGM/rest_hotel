@@ -44,6 +44,7 @@ export const translations = {
     placeholderCapacity: "Ej: 2",
     placeholderBeds: "Ej: 1",
     placeholderPrice: "100.00",
+    chooseFiles: "Elegir Archivos",
     placeholderDescription: "Ej: Habitación espaciosa con vista al mar",
     placeholderImageUrl: "https://ejemplo.com/imagen.jpg",
     edit: "Editar",
@@ -82,6 +83,8 @@ export const translations = {
     editRoom: "Edit Room",
     addNewRoom: "Add New Room",
     roomNumber: "Room Number",
+        chooseFiles: "Choose Files",
+
     type: "Type",
     capacity: "Capacity",
     numberOfBeds: "Number of Beds",
@@ -157,6 +160,8 @@ export const translations = {
     minibar: "Minibar",
     balcony: "Balcon",
     none: "Aucun",
+            chooseFiles: "Choisir des fichiers",
+
     imageManagement: "Gestion des images",
     addFromUrl: "Ajouter depuis une URL",
     uploadFromDevice: "Télécharger depuis l'appareil",
